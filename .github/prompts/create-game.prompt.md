@@ -1,11 +1,10 @@
 ---
 description: "Scaffold and build the Table Baseball-Little card game as a web application using the rules in docs/"
-agent: "plan"
 ---
 
 # Create Table Baseball-Little Game
 
-Build a web-based implementation of the Table Baseball-Little tabletop card game.
+Build a web-based implementation of the Table Baseball-Little tabletop card game. The game mimics the real baseball game, and in general is similar; there are two teams of 9 players. The offense (batter) tries to score runs by advancing around the bases, while the defense (pitcher + fielders) tries to get outs and prevent scoring. Players alternate between offense and defense each inning.
 
 ## Source of Truth
 
@@ -29,7 +28,11 @@ Read and follow all game rules defined in [rules](../../docs/rules.md). The fiel
  
  Having everything on one page is too busy. So the users will start with only the card portion of the game. If the user actually hits the ball, then we will show the playing field and let them position their fielders. After the play is resolved, we will hide the field again and go back to the card portion for the next at-bat. This way we can keep the UI simple and focused on the current action.
 
-## Player Attributes
+## Team Player 
+
+As any Baseball game, there are two teams: the offense (batter) and the defense (pitcher + fielders). The offense tries to score runs by advancing around the bases, while the defense tries to get outs and prevent scoring. Players will alternate between offense and defense each inning.
+
+Pleyers have these two characteristics:
 
 - **Strength**: Light, Medium, Heavy (affects depth spinner)
 - **Handedness**: Right, Left (affects direction spinner)
