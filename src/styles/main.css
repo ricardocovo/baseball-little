@@ -1,0 +1,498 @@
+:root {
+  /* ── Color palette ── */
+  --gray-dark: #6C6B68;
+  --cream: #D5D0C4;
+  --taupe: #877C73;
+  --steel: #6595B2;
+  --ice: #BED8E1;
+
+  --bg: #3a3937;
+  --bg-elev: #504e4b;
+  --bg-elev2: var(--gray-dark);
+  --fg: var(--cream);
+  --fg-dim: #a9a49a;
+  --accent: var(--steel);
+  --accent2: var(--ice);
+  --border: var(--taupe);
+  --grass: #2d6a4f;
+  --grass-dark: #1b4332;
+  --error: #e63946;
+  --gold: #ffd166;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  color-scheme: dark;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+#app { min-height: 100vh; }
+
+button {
+  font: inherit;
+  background: var(--bg-elev2);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.05s;
+}
+button:hover { background: #7a7975; border-color: var(--cream); }
+button:active { transform: translateY(1px); }
+button.primary { background: var(--accent); color: #fff; border-color: #4e7e99; font-weight: 600; }
+button.primary:hover { background: #7da8c4; }
+input, select {
+  font: inherit;
+  background: var(--bg-elev2);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+}
+
+/* ---------------- Game frame layout ---------------- */
+.game-frame {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0.75rem;
+}
+
+/* ── Header bar ── */
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: linear-gradient(180deg, #5a5856 0%, var(--bg-elev) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px 12px 0 0;
+  padding: 0.75rem 1.25rem;
+}
+
+.header-team {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 160px;
+}
+.header-team.away-side { justify-content: flex-start; }
+.header-team.home-side { justify-content: flex-end; }
+
+.team-badge {
+  font-size: 1.6rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+.team-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--fg);
+  letter-spacing: 0.3px;
+}
+
+.header-score {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--ice);
+  min-width: 60px;
+  text-align: center;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+.header-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 130px;
+  padding: 0 1rem;
+}
+.inning-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cream);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* Mini diamond in header */
+.diamond-mini {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  transform: rotate(45deg);
+}
+.mini-base {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #7a7975;
+  border: 1px solid #999;
+  border-radius: 1px;
+}
+.mini-base.first  { right: 0;  top: 50%; transform: translateY(-50%); }
+.mini-base.second { left: 50%; top: 0;   transform: translateX(-50%); }
+.mini-base.third  { left: 0;   top: 50%; transform: translateY(-50%); }
+.mini-base.occupied {
+  background: var(--steel);
+  border-color: var(--ice);
+  box-shadow: 0 0 6px var(--steel);
+}
+
+/* Outs dots in header */
+.header-outs {
+  display: flex;
+  gap: 0.3rem;
+}
+.out-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #5a5856;
+  border: 1px solid #7a7975;
+}
+.out-dot.on {
+  background: var(--error);
+  border-color: var(--error);
+  box-shadow: 0 0 4px var(--error);
+}
+
+/* ── Content area ── */
+.game-content {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.content-main {
+  min-width: 0;
+  padding: 0;
+}
+
+.scoreboard-panel {
+  background: var(--bg-elev);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.game-action {
+  padding: 0;
+}
+
+.content-sidebar {
+  background: var(--bg-elev);
+  border-left: 1px solid var(--border);
+  padding: 0.75rem;
+  height: 360px;
+  overflow-y: auto;
+}
+
+/* ── Scoreboard table ── */
+.scoreboard { border-collapse: collapse; font-variant-numeric: tabular-nums; width: 100%; }
+.scoreboard th, .scoreboard td {
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.55rem;
+  text-align: center;
+  min-width: 1.7rem;
+  font-size: 0.9rem;
+}
+.scoreboard .team-cell {
+  text-align: left;
+  min-width: 8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.scoreboard .sb-badge { font-size: 0.75rem; margin-right: 0.3rem; }
+.scoreboard thead th {
+  background: var(--bg-elev2);
+  color: var(--fg-dim);
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+.scoreboard tbody td {
+  color: var(--fg);
+}
+.scoreboard td.total, .scoreboard th.total {
+  background: var(--bg-elev2);
+  font-weight: 700;
+  color: var(--ice);
+}
+.scoreboard .current {
+  background: var(--steel);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ── Legacy layout (Setup, CoinFlip screens) ── */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.main { min-width: 0; }
+.sidebar {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem;
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+
+/* ── Legacy topbar (kept for compat) ── */
+.topbar {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  background: var(--bg-elev);
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+.brand { font-weight: 700; letter-spacing: 0.5px; }
+.inning-header { color: var(--fg-dim); font-variant: small-caps; }
+.inning-header .arrow { color: var(--accent); }
+
+.status-row { display: flex; align-items: center; gap: 1rem; }
+.diamond {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  transform: rotate(45deg);
+}
+.diamond .base {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: #5a5856;
+  border: 1px solid #7a7975;
+}
+.diamond .base.first  { right: 0;  top: 50%; transform: translateY(-50%); }
+.diamond .base.second { left: 50%; top: 0;   transform: translateX(-50%); }
+.diamond .base.third  { left: 0;   top: 50%; transform: translateY(-50%); }
+.diamond .base.home   { left: 50%; bottom: 0; transform: translateX(-50%); background: var(--cream); }
+.diamond .base.occupied { background: var(--steel); border-color: var(--ice); box-shadow: 0 0 8px var(--steel); }
+
+.outs { display: flex; align-items: center; gap: 0.4rem; }
+.outs .dot { width: 10px; height: 10px; border-radius: 50%; background: #5a5856; border: 1px solid #7a7975; }
+.outs .dot.on { background: var(--error); border-color: var(--error); }
+.outs .label { color: var(--fg-dim); font-size: 0.75rem; letter-spacing: 1px; }
+
+/* ---------------- Setup screen ---------------- */
+.setup { padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+.setup h2 { margin-top: 0; }
+.form-row { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; }
+.form-row label { display: flex; flex-direction: column; gap: 0.25rem; }
+.lineups { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.lineup table { width: 100%; border-collapse: collapse; }
+.lineup th, .lineup td { padding: 0.3rem; text-align: left; }
+.lineup th { color: var(--fg-dim); font-weight: 500; border-bottom: 1px solid var(--border); }
+.lineup input.name { width: 100%; }
+.lineup h3 input { margin-left: 0.5rem; }
+.actions { margin-top: 1.5rem; display: flex; gap: 0.75rem; }
+
+/* ---------------- Coin flip ---------------- */
+.coinflip { padding: 4rem; text-align: center; }
+.coin {
+  width: 96px;
+  height: 96px;
+  background: radial-gradient(circle at 30% 30%, var(--gold), #b8860b);
+  border-radius: 50%;
+  margin: 1rem auto;
+  border: 4px solid #8a6914;
+  box-shadow: 0 4px 20px rgba(255, 209, 102, 0.4);
+}
+.coin.spinning { animation: flip 0.6s linear infinite; }
+@keyframes flip { from { transform: rotateY(0deg) } to { transform: rotateY(360deg) } }
+
+/* ---------------- Card phase ---------------- */
+.card-phase { padding: 1rem; }
+.atbat-header {
+  background: var(--bg-elev);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.matchup {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 1rem 0;
+  background: var(--bg-elev);
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.matchup .label { color: var(--fg-dim); font-size: 0.85rem; margin-bottom: 0.5rem; text-align: center; }
+.matchup .vs { font-weight: 800; color: var(--accent); font-size: 1.5rem; text-align: center; }
+.matchup .opponent, .matchup .me { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.matchup .thinking, .matchup .prompt {
+  width: 140px; height: 240px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg-elev2); border: 1px dashed var(--border); border-radius: 8px;
+  color: var(--fg-dim); font-style: italic;
+}
+.outcome {
+  background: var(--steel);
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin: 0.75rem 0;
+}
+
+/* ---------------- Cards ---------------- */
+.hand {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+.card {
+  width: 140px;
+  height: 240px;
+  background: linear-gradient(180deg, var(--bg-elev2) 0%, var(--bg) 100%);
+  color: var(--fg);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+  font-size: 0.95rem;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.08s, border-color 0.15s, box-shadow 0.15s;
+}
+.card .card-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.card .card-count {
+  position: relative;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--fg);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.4rem;
+}
+.card .card-name { font-weight: 600; position: relative; z-index: 1; }
+.card:hover { border-color: var(--accent); box-shadow: 0 0 12px rgba(101, 149, 178, 0.4); transform: translateY(-2px); }
+.card.selected { border-color: var(--accent); box-shadow: 0 0 12px var(--accent); }
+.card.batter { border-top: 6px solid var(--steel); }
+.card.pitcher { border-top: 6px solid var(--taupe); }
+.card.back {
+  background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 6px, var(--bg-elev) 6px, var(--bg-elev) 12px);
+  cursor: default;
+  color: transparent;
+}
+.card.revealed { cursor: default; border-color: var(--accent); }
+
+/* When hand follows the grid, remove bottom rounding from game-content */
+.game-content:has(+ .your-hand) {
+  border-radius: 0;
+  border-bottom: none;
+}
+
+.your-hand {
+  margin-top: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  background: var(--bg-elev);
+}
+.your-hand h3 { color: var(--fg-dim); font-weight: 500; margin-bottom: 0.5rem; margin-top: 0; }
+
+/* ---------------- Field grid ---------------- */
+.field-phase { padding: 1rem; }
+.field-grid {
+  background: linear-gradient(180deg, var(--grass) 0%, var(--grass-dark) 100%);
+  padding: 0.5rem;
+  border-radius: 12px;
+  border: 2px solid var(--grass-dark);
+  display: inline-block;
+  margin: 1rem auto;
+  user-select: none;
+}
+.grid-row { display: flex; align-items: center; }
+.row-label, .col-label { width: 28px; height: 28px; color: #fff8; text-align: center; line-height: 28px; font-size: 0.7rem; }
+.cell {
+  width: 28px;
+  height: 28px;
+  margin: 1px;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  color: #fff;
+  cursor: default;
+}
+.cell.editable { cursor: pointer; }
+.cell.editable:hover { background: rgba(255, 255, 255, 0.1); }
+.cell.fence { background: rgba(255, 255, 255, 0.08); }
+.cell.error { background: var(--error); color: #fff; }
+.cell.fielder { background: var(--accent2); color: #fff; font-weight: 700; }
+.cell.pitcher { background: var(--accent); color: #1a1a1a; font-weight: 700; }
+.cell.landing { background: var(--gold); color: #1a1a1a; font-weight: 800; }
+.cell.dir-h { box-shadow: inset 0 0 0 1px var(--accent); }
+.cell.depth-h { box-shadow: inset 0 0 0 1px var(--accent); }
+.cell.dir-h.depth-h { box-shadow: inset 0 0 0 2px var(--gold); }
+.cell.sel { box-shadow: 0 0 8px var(--gold); border-color: var(--gold); }
+
+/* ---------------- Event log ---------------- */
+.event-log h3 { margin-top: 0; color: var(--fg-dim); font-weight: 500; }
+.event-log ul { list-style: none; padding: 0; margin: 0; }
+.event-log .evt { padding: 0.3rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.event-log .evt-RunsScored { color: var(--gold); font-weight: 600; }
+.event-log .evt-StrikeOut { color: var(--error); }
+.event-log .evt-HalfInningEnded { color: var(--accent2); font-weight: 600; }
+.event-log .evt-GameOver { color: var(--accent); font-weight: 700; }
+
+/* ---------------- Game over ---------------- */
+.game-over { padding: 3rem; text-align: center; }
+.game-over .winner { font-size: 2rem; color: var(--accent); margin: 1rem 0; }
+.game-over .final-score { font-size: 1.25rem; color: var(--fg); }
+.game-over .reason { color: var(--fg-dim); font-style: italic; }
