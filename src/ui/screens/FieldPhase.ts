@@ -1,8 +1,9 @@
 import type { BatterCard } from "../../domain/cards.ts";
 import type { Coord, Column, Row } from "../../domain/field.ts";
-import { pitcherPositionFor } from "../../domain/field.ts";
+import { COLUMNS, pitcherPositionFor } from "../../domain/field.ts";
 import type { Player } from "../../domain/players.ts";
 import { renderFieldGrid } from "../components/FieldGrid.ts";
+import { renderSpinner } from "../components/Spinner.ts";
 
 export type FieldPhaseProps = {
   humanIsDefense: boolean;
@@ -15,7 +16,7 @@ export type FieldPhaseProps = {
   fielders: readonly Coord[]; // 8 fielders (current placement)
   selectedFielderIndex?: number;
   /** Phase: place fielders -> spin direction -> spin depth -> show landing */
-  phase: "Placing" | "AwaitingDirectionSpin" | "AwaitingDepthSpin" | "Resolved";
+  phase: "Placing" | "AwaitingDirectionSpin" | "SpinningDirection" | "AwaitingDepthSpin" | "SpinningDepth" | "Resolved";
   direction?: Column;
   depth?: Row;
   landing?: Coord;
@@ -36,6 +37,54 @@ export function renderFieldPhase(props: FieldPhaseProps): string {
     selectedFielderIndex,
   });
 
+  // Direction spinner (A–O)
+  const dirSegments = COLUMNS as readonly string[];
+  const showDirSpinner = phase !== "Placing";
+  const dirSpinning = phase === "SpinningDirection";
+  // Determine action overlay for direction spinner
+  let dirAction = "";
+  if (phase === "AwaitingDirectionSpin") {
+    dirAction = humanIsDefense
+      ? `<span class="spinner-status">Opponent spinning…</span>`
+      : `<button id="spin-direction" class="primary spinner-btn">🎯 Spin</button>`;
+  } else if (phase === "SpinningDirection") {
+    dirAction = `<span class="spinner-status">Spinning…</span>`;
+  }
+  const dirSpinner = showDirSpinner
+    ? renderSpinner({
+        id: "dir-spinner",
+        segments: dirSegments,
+        result: direction,
+        spinning: dirSpinning,
+        title: "Direction (A–O)",
+        actionHtml: dirAction,
+      })
+    : "";
+
+  // Depth spinner (1–12)
+  const depthSegments = Array.from({ length: 12 }, (_, i) => String(i + 1));
+  const showDepthSpinner = phase === "AwaitingDepthSpin" || phase === "SpinningDepth" || phase === "Resolved";
+  const depthSpinning = phase === "SpinningDepth";
+  // Determine action overlay for depth spinner
+  let depthAction = "";
+  if (phase === "AwaitingDepthSpin") {
+    depthAction = humanIsDefense
+      ? `<span class="spinner-status">Opponent spinning…</span>`
+      : `<button id="spin-depth" class="primary spinner-btn">🎯 Spin</button>`;
+  } else if (phase === "SpinningDepth") {
+    depthAction = `<span class="spinner-status">Spinning…</span>`;
+  }
+  const depthSpinner = showDepthSpinner
+    ? renderSpinner({
+        id: "depth-spinner",
+        segments: depthSegments,
+        result: depth != null ? String(depth) : undefined,
+        spinning: depthSpinning,
+        title: "Depth (1–12)",
+        actionHtml: depthAction,
+      })
+    : "";
+
   let controls = "";
   if (phase === "Placing") {
     controls = humanIsDefense
@@ -45,14 +94,6 @@ export function renderFieldPhase(props: FieldPhaseProps): string {
         <button id="reset-fielders">Reset</button>
       `
       : `<p>Computer is placing fielders…</p>`;
-  } else if (phase === "AwaitingDirectionSpin") {
-    controls = humanIsDefense
-      ? `<p>Computer is spinning direction…</p>`
-      : `<button id="spin-direction" class="primary">Spin direction</button>`;
-  } else if (phase === "AwaitingDepthSpin") {
-    controls = humanIsDefense
-      ? `<p>Computer is spinning depth…</p>`
-      : `<button id="spin-depth" class="primary">Spin depth</button>`;
   } else if (phase === "Resolved") {
     controls = `<button id="continue-after-hit" class="primary">Continue</button>`;
   }
@@ -62,7 +103,15 @@ export function renderFieldPhase(props: FieldPhaseProps): string {
       <header class="atbat-header">
         <div>Ball in play! <strong>${batter.name}</strong> (${batter.handedness[0]}HB, ${batter.strength}) — ${batterCard}</div>
       </header>
-      ${grid}
+      <div class="field-layout">
+        <div class="field-diamond-area">
+          ${grid}
+        </div>
+        <div class="spinners-area">
+          ${dirSpinner || `<div class="spinner-placeholder">Direction<br/>(A–O)</div>`}
+          ${depthSpinner || `<div class="spinner-placeholder">Depth<br/>(1–12)</div>`}
+        </div>
+      </div>
       ${message ? `<div class="outcome">${message}</div>` : ""}
       <div class="actions">${controls}</div>
     </section>

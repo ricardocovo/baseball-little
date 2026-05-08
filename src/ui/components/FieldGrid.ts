@@ -39,12 +39,11 @@ export function renderFieldGrid(props: FieldGridProps): string {
         props.selectedFielderIndex === fielderIdx && fielderIdx >= 0 ? "sel" : "",
       ].filter(Boolean).join(" ");
       const data = `data-col="${col}" data-row="${r}"`;
-      const inner = isPitcher ? "P" : fielderIdx >= 0 ? `F${fielderIdx + 1}` : isLanding ? "•" : "";
+      const label = isPitcher ? "P" : fielderIdx >= 0 ? `F${fielderIdx + 1}` : isLanding ? "•" : "";
+      const inner = label ? `<span class="cell-label">${label}</span>` : "";
       rowCells.push(`<div class="${classes}" ${data}>${inner}</div>`);
     }
-    cells.push(`<div class="grid-row" data-row="${r}"><div class="row-label">${r}</div>${rowCells.join("")}</div>`);
+    cells.push(`<div class="grid-row" data-row="${r}">${rowCells.join("")}</div>`);
   }
-  // Column header
-  const header = `<div class="grid-row header"><div class="row-label"></div>${COLUMNS.map((c) => `<div class="col-label">${c}</div>`).join("")}</div>`;
-  return `<div class="field-grid">${cells.join("")}${header}</div>`;
+  return `<div class="field-grid">${cells.join("")}</div>`;
 }

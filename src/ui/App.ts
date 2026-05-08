@@ -1,4 +1,5 @@
 import type { BatterCard, PitcherCard } from "../domain/cards.ts";
+import { resolveCongruence } from "../domain/congruence.ts";
 import type { Coord, Column, Row } from "../domain/field.ts";
 import { COLUMNS } from "../domain/field.ts";
 import { createTeam } from "../domain/players.ts";
@@ -18,6 +19,7 @@ import { renderCoinFlip } from "./screens/CoinFlip.ts";
 import { renderCardPhase, renderCardHand } from "./screens/CardPhase.ts";
 import { renderFieldPhase } from "./screens/FieldPhase.ts";
 import { renderGameOver } from "./screens/GameOver.ts";
+import { playHitSound, playStrikeOutSound, playHomeRunSound } from "../sounds/sounds.ts";
 import {
   renderGameHeader,
   renderScoreboard,
@@ -47,7 +49,7 @@ type FieldPhaseUiState = {
   batterCard: BatterCard;
   fielders: Coord[];
   selectedFielderIndex?: number;
-  phase: "Placing" | "AwaitingDirectionSpin" | "AwaitingDepthSpin" | "Resolved";
+  phase: "Placing" | "AwaitingDirectionSpin" | "SpinningDirection" | "AwaitingDepthSpin" | "SpinningDepth" | "Resolved";
   direction?: Column;
   depth?: Row;
   landing?: Coord;
@@ -334,7 +336,17 @@ export class App {
     if (!this.cardUi) return;
     if (this.cardUi.humanSelection !== undefined && this.cardUi.aiSelection !== undefined) {
       this.cardUi.revealed = true;
-      // Compute outcome description preview (without applying yet).
+      // Play sound based on card outcome.
+      const offSide = this.game.currentOffense();
+      const humanIsOffense = offSide === this.humanSide;
+      const batterCard = (humanIsOffense ? this.cardUi.humanSelection : this.cardUi.aiSelection) as BatterCard;
+      const pitcherCard = (humanIsOffense ? this.cardUi.aiSelection : this.cardUi.humanSelection) as PitcherCard;
+      const outcome = resolveCongruence(batterCard, pitcherCard);
+      if (outcome.kind === "Hit") {
+        playHitSound();
+      } else if (outcome.kind === "StrikeOut") {
+        playStrikeOutSound();
+      }
       this.render();
     } else {
       this.render();
@@ -407,19 +419,28 @@ export class App {
 
   private spinDirection(): void {
     if (!this.fieldUi) return;
+    // Call engine immediately to get the result
     const ev = this.game.spinHitDirection();
     const dir = ev.find((e) => e.type === "HitDirection");
     if (dir && dir.type === "HitDirection") this.fieldUi.direction = dir.col as Column;
-    this.fieldUi.phase = "AwaitingDepthSpin";
+    // Start spin animation
+    this.fieldUi.phase = "SpinningDirection";
     this.render();
-    const humanIsOffense = this.game.currentOffense() === this.humanSide;
-    if (!humanIsOffense) {
-      setTimeout(() => this.spinDepth(), AI_THINK_MS);
-    }
+    // After animation completes, advance to next phase
+    setTimeout(() => {
+      if (!this.fieldUi) return;
+      this.fieldUi.phase = "AwaitingDepthSpin";
+      this.render();
+      const humanIsOffense = this.game.currentOffense() === this.humanSide;
+      if (!humanIsOffense) {
+        setTimeout(() => this.spinDepth(), AI_THINK_MS);
+      }
+    }, 2400);
   }
 
   private spinDepth(): void {
     if (!this.fieldUi) return;
+    // Call engine immediately to get the result
     const ev = this.game.spinHitDepth();
     const depth = ev.find((e) => e.type === "HitDepth");
     if (depth && depth.type === "HitDepth") this.fieldUi.depth = depth.row as Row;
@@ -430,8 +451,19 @@ export class App {
     if (cls && cls.type === "HitClassified") {
       this.fieldUi.message = describeEvent(cls);
     }
-    this.fieldUi.phase = "Resolved";
+    // Play home run sound if depth is 12
+    if (this.fieldUi.depth === 12) {
+      playHomeRunSound();
+    }
+    // Start spin animation
+    this.fieldUi.phase = "SpinningDepth";
     this.render();
+    // After animation completes, show resolved
+    setTimeout(() => {
+      if (!this.fieldUi) return;
+      this.fieldUi.phase = "Resolved";
+      this.render();
+    }, 2400);
   }
 
   private afterHitContinue(): void {
