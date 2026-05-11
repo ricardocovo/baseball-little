@@ -57,8 +57,8 @@ describe("integration / full AI-vs-AI game terminates", () => {
         case "AwaitingFielding": {
           const defAi = defSide === "Home" ? homeAi : awayAi;
           const placement = defAi.placeFielders(g.currentBatter());
-          // If AI returns fewer than 8 (safety in tests), pad with default.
-          const all = placement.length === 8
+          // If AI returns fewer than 7 (safety in tests), pad with default.
+          const all = placement.length === 7
             ? placement
             : defaultFielderPlacement(g.currentBatter().strength, g.currentBatter().handedness);
           g.submitFielders(all);

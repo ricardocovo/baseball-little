@@ -99,7 +99,7 @@ describe("Game / Hit & Run mechanics", () => {
     // Place fielders far away so we get a triple (or whatever the spinner gives).
     g.submitFielders([
       { col: "A", row: 2 }, { col: "B", row: 2 }, { col: "C", row: 2 }, { col: "D", row: 2 },
-      { col: "E", row: 2 }, { col: "F", row: 2 }, { col: "G", row: 2 }, { col: "M", row: 2 },
+      { col: "E", row: 2 }, { col: "F", row: 2 }, { col: "G", row: 2 },
     ]);
     g.spinHitDirection();
     g.spinHitDepth();

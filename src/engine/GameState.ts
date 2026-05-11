@@ -252,16 +252,20 @@ export class Game {
     return events;
   }
 
-  /** Submit fielder positions (8 fielders). Pitcher is auto-placed. */
-  submitFielders(eightFielders: readonly Coord[]): GameEvent[] {
+  /**
+   * Submit fielder positions (7 fielders: 4 infielders + 3 outfielders).
+   * The catcher is not represented on the field; the pitcher is auto-placed,
+   * for a total of 8 defenders.
+   */
+  submitFielders(sevenFielders: readonly Coord[]): GameEvent[] {
     this.requireStatus("AwaitingFielding");
-    if (eightFielders.length !== 8) {
-      throw new Error("Expected exactly 8 fielders");
+    if (sevenFielders.length !== 7) {
+      throw new Error("Expected exactly 7 fielders");
     }
     const ph = this.state.pendingHit;
     if (!ph) throw new Error("No pending hit");
     const pitcherCoord = pitcherPositionFor(ph.batter.handedness);
-    ph.fielders = [...eightFielders, pitcherCoord];
+    ph.fielders = [...sevenFielders, pitcherCoord];
     this.state.status = "AwaitingDirectionSpin";
     return [];
   }

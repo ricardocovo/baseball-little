@@ -61,15 +61,15 @@ describe("AI / choosePitcherCard", () => {
 });
 
 describe("AI / placeFielders", () => {
-  it("returns 8 unique coordinates for any batter profile", () => {
+  it("returns 7 unique coordinates for any batter profile", () => {
     const rng = createRng(99);
     const ai = createAi(rng, "Home");
     for (const s of ["Light","Medium","Heavy"] as const) {
       for (const h of ["Right","Left"] as const) {
         const placed = ai.placeFielders(player(s, h));
-        expect(placed).toHaveLength(8);
+        expect(placed).toHaveLength(7);
         const keys = new Set(placed.map((c) => `${c.col}${c.row}`));
-        expect(keys.size).toBe(8);
+        expect(keys.size).toBe(7);
       }
     }
   });

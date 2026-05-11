@@ -29,9 +29,11 @@ function resultAngle(segments: readonly string[], result: string): number {
   if (idx < 0) return 0;
   const sliceAngle = 360 / segments.length;
   // Centre of the target wedge, measured clockwise from 12-o'clock.
-  // We want to rotate the wheel so that wedge ends up under the pointer,
-  // so we spin multiple full turns + the target offset.
-  return 360 * 5 + idx * sliceAngle + sliceAngle / 2;
+  // To bring that wedge under the pointer (at 12-o'clock), we must rotate
+  // the wheel counter-clockwise by that offset (i.e. by its negative),
+  // plus several full clockwise turns for the spin animation.
+  const offset = idx * sliceAngle + sliceAngle / 2;
+  return 360 * 5 - offset;
 }
 
 export function renderSpinner(props: SpinnerProps): string {

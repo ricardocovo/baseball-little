@@ -376,7 +376,16 @@ input, select {
   padding: 0.75rem;
   border-radius: 8px;
   margin: 0.75rem 0;
+  flex: 1;
 }
+.outcome-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+.outcome-row .outcome { margin: 0; }
+.outcome-row .actions { margin-top: 0; }
 
 /* ---------------- Cards ---------------- */
 .hand {
@@ -455,63 +464,131 @@ input, select {
 /* ---------------- Field grid (diamond) ---------------- */
 .field-phase { padding: 1rem; }
 .field-layout {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
+  gap: 1.5rem;
   margin: 1rem 0;
+}
+@media (max-width: 900px) {
+  .field-layout { grid-template-columns: 1fr; }
 }
 .field-diamond-area {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Extra padding so the rotated diamond doesn't clip */
-  padding: 4rem 2rem;
+  padding: 0;
+  min-width: 0;
 }
-.field-grid {
-  background: linear-gradient(135deg, var(--grass) 0%, var(--grass-dark) 100%);
-  padding: 0.25rem;
-  border-radius: 6px;
-  border: 3px solid rgba(255,255,255,0.15);
-  display: inline-block;
-  user-select: none;
-  transform: rotate(45deg);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 0 60px rgba(0,0,0,0.2);
+
+/* ── Yankee Stadium-style fan board ── */
+.field-board {
+  width: 100%;
+  max-width: 500px;
+  max-height: 500px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55),
+              inset 0 0 0 3px rgba(255, 255, 255, 0.08);
+  background: #0d2a55;
 }
-.grid-row { display: flex; align-items: center; }
-.cell {
-  width: 22px;
-  height: 22px;
-  margin: 0.5px;
-  background: rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.55rem;
-  color: var(--fg-on-accent);
-  cursor: default;
-  position: relative;
+.field-svg { display: block; width: 100%; height: 100%; user-select: none; }
+
+/* Navy board background (the area outside the playing wedge) */
+.field-svg .board-bg { fill: #102a55; }
+
+/* Outfield grass wedge */
+.field-svg .grass {
+  fill: url(#__never__) #2d6a4f;
+  fill: #2f7a4e;
 }
-.cell-label {
-  transform: rotate(-45deg);
-  display: block;
-  line-height: 1;
+.field-svg .warning-track { fill: #b07a3a; opacity: 0.55; }
+.field-svg .infield-dirt { fill: #c48a4a; }
+.field-svg .diamond { fill: #3f8a5b; stroke: #ffffff; stroke-width: 1.5; }
+.field-svg .foul-line {
+  stroke: #ffffff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.95;
+}
+.field-svg .home-plate {
+  fill: #ffffff;
+  stroke: #1a1a1a;
+  stroke-width: 1.5;
+}
+
+/* Every cell wedge: transparent fill, thin white grid lines */
+.field-svg .cells path.cell {
+  fill: rgba(255, 255, 255, 0);
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 0.8;
+  transition: fill 0.12s ease;
+}
+.field-svg .cells path.cell.fence {
+  fill: rgba(255, 255, 255, 0.06);
+  stroke: rgba(255, 255, 255, 0.55);
+}
+.field-svg .cells path.cell.error {
+  fill: var(--error);
+  stroke: #ffffff;
+  stroke-width: 1.2;
+}
+.field-svg .cells path.cell.dir-h { fill: rgba(0, 119, 192, 0.25); }
+.field-svg .cells path.cell.depth-h { fill: rgba(0, 119, 192, 0.25); }
+.field-svg .cells path.cell.dir-h.depth-h {
+  fill: rgba(255, 204, 0, 0.45);
+  stroke: var(--gold);
+  stroke-width: 1.5;
+}
+.field-svg .cells path.cell.landing {
+  fill: rgba(255, 204, 0, 0.7);
+  stroke: var(--gold);
+  stroke-width: 1.5;
+}
+.field-svg .cells path.cell.editable { cursor: pointer; }
+.field-svg .cells path.cell.editable:hover { fill: rgba(255, 255, 255, 0.18); }
+
+/* Player markers (fielders / pitcher) */
+.field-svg .marker { pointer-events: none; }
+.field-svg .marker circle {
+  stroke: #ffffff;
+  stroke-width: 1.4;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+.field-svg .marker text {
+  text-anchor: middle;
+  font-size: 10px;
   font-weight: 700;
+  fill: #ffffff;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
-.cell.editable { cursor: pointer; }
-.cell.editable:hover { background: rgba(255, 255, 255, 0.15); }
-.cell.fence { background: rgba(255, 255, 255, 0.08); }
-.cell.error { background: var(--error); color: var(--fg-on-accent); }
-.cell.fielder { background: var(--accent2); color: var(--fg-on-accent); }
-.cell.pitcher { background: #cc0000; color: var(--fg-on-accent); }
-.cell.landing { background: var(--gold); color: var(--fg-on-dark); }
-.cell.dir-h { background: rgba(0, 119, 192, 0.25); }
-.cell.depth-h { background: rgba(0, 119, 192, 0.25); }
-.cell.dir-h.depth-h { background: rgba(255, 204, 0, 0.35); box-shadow: inset 0 0 0 2px var(--gold); }
-.cell.sel { box-shadow: 0 0 8px var(--gold); border-color: var(--gold); }
+.field-svg .marker.fielder circle { fill: #0077c0; }
+.field-svg .marker.pitcher circle { fill: #cc0000; }
+.field-svg .marker.landing-marker circle {
+  fill: var(--gold);
+  stroke: #5a4500;
+}
+.field-svg .marker.fielder.sel circle {
+  stroke: var(--gold);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 6px var(--gold));
+}
+
+/* Axis labels (A..O outside arc, 1..12 along 1B line) */
+.field-svg .axis {
+  fill: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  letter-spacing: 0.5px;
+  opacity: 0.85;
+}
+.field-svg .axis.row { font-size: 10px; opacity: 0.7; }
 
 /* ---------------- Spinners ---------------- */
 .spinners-area {

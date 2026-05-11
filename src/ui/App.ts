@@ -207,7 +207,7 @@ export class App {
     if (phase === "Placing") {
       const humanIsDefense = this.game.currentDefense() === this.humanSide;
       if (!humanIsDefense) return;
-      this.root.querySelectorAll<HTMLDivElement>(".cell.editable").forEach((cell) => {
+      this.root.querySelectorAll<SVGPathElement>("path.cell.editable").forEach((cell) => {
         cell.addEventListener("click", () => this.handleGridClick(cell));
       });
       this.root.querySelector<HTMLButtonElement>("#confirm-fielders")?.addEventListener("click", () => {
@@ -406,7 +406,7 @@ export class App {
 
   private confirmFielders(): void {
     if (!this.fieldUi) return;
-    if (this.fieldUi.fielders.length !== 8) return;
+    if (this.fieldUi.fielders.length !== 7) return;
     this.game.submitFielders(this.fieldUi.fielders);
     this.fieldUi.phase = "AwaitingDirectionSpin";
     this.render();
@@ -477,7 +477,7 @@ export class App {
     this.startNextAtBat();
   }
 
-  private handleGridClick(cell: HTMLDivElement): void {
+  private handleGridClick(cell: SVGPathElement): void {
     if (!this.fieldUi) return;
     const col = cell.dataset.col as Column | undefined;
     const row = cell.dataset.row ? (Number(cell.dataset.row) as Row) : undefined;

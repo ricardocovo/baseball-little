@@ -13,7 +13,7 @@ export type FieldPhaseProps = {
   // screen (with the Continue button) renderable after the play has resolved.
   batter: Player;
   batterCard: BatterCard;
-  fielders: readonly Coord[]; // 8 fielders (current placement)
+  fielders: readonly Coord[]; // 7 fielders (current placement)
   selectedFielderIndex?: number;
   /** Phase: place fielders -> spin direction -> spin depth -> show landing */
   phase: "Placing" | "AwaitingDirectionSpin" | "SpinningDirection" | "AwaitingDepthSpin" | "SpinningDepth" | "Resolved";
@@ -89,7 +89,7 @@ export function renderFieldPhase(props: FieldPhaseProps): string {
   if (phase === "Placing") {
     controls = humanIsDefense
       ? `
-        <p>Click a fielder (F1–F8), then click a grid cell to move them. Pitcher (P) is auto-placed.</p>
+        <p>Click a fielder (F1–F7), then click a grid cell to move them. Pitcher (P) is auto-placed.</p>
         <button id="confirm-fielders" class="primary">Confirm placement</button>
         <button id="reset-fielders">Reset</button>
       `
@@ -112,8 +112,10 @@ export function renderFieldPhase(props: FieldPhaseProps): string {
           ${depthSpinner || `<div class="spinner-placeholder">Depth<br/>(1–12)</div>`}
         </div>
       </div>
-      ${message ? `<div class="outcome">${message}</div>` : ""}
-      <div class="actions">${controls}</div>
+      <div class="outcome-row">
+        ${message ? `<div class="outcome">${message}</div>` : ""}
+        <div class="actions">${controls}</div>
+      </div>
     </section>
   `;
 }

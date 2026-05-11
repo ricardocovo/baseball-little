@@ -56,7 +56,7 @@ export type HitClassification =
 
 /**
  * Classify where a batted ball lands given the defenders' positions
- * (typically 8 fielders + 1 pitcher = 9 entries).
+ * (typically 7 fielders + 1 pitcher = 8 entries).
  *
  * Mapping (per .github/prompts/create-game.prompt.md):
  *  - Land on the error square -> Error.

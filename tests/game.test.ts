@@ -78,10 +78,10 @@ describe("Game / hit -> field flow", () => {
     g.playCards("HighSwing", "FastHigh");
     expect(g.snapshot().status).toBe("AwaitingFielding");
 
-    // place 8 reasonable fielders
+    // place 7 reasonable fielders (catcher is not on the field)
     g.submitFielders([
       { col: "C", row: 4 }, { col: "G", row: 4 }, { col: "J", row: 4 }, { col: "M", row: 4 },
-      { col: "C", row: 8 }, { col: "H", row: 8 }, { col: "M", row: 8 }, { col: "H", row: 6 },
+      { col: "C", row: 8 }, { col: "H", row: 8 }, { col: "M", row: 8 },
     ]);
     expect(g.snapshot().status).toBe("AwaitingDirectionSpin");
 
@@ -112,7 +112,7 @@ describe("Game / hand exhaustion", () => {
       if (status === "AwaitingFielding") {
         g.submitFielders([
           { col: "C", row: 4 }, { col: "G", row: 4 }, { col: "J", row: 4 }, { col: "M", row: 4 },
-          { col: "C", row: 8 }, { col: "H", row: 8 }, { col: "M", row: 8 }, { col: "H", row: 6 },
+          { col: "C", row: 8 }, { col: "H", row: 8 }, { col: "M", row: 8 },
         ]);
         continue;
       }
