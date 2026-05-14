@@ -53,7 +53,7 @@ export function describeEvent(e: GameEvent): string {
 }
 
 export function renderEventLog(events: readonly GameEvent[], maxItems = 60): string {
-  const last = events.slice(-maxItems);
+  const last = events.slice(-maxItems).reverse();
   const items = last.map((e) => `<li class="evt evt-${e.type}">${escapeHtml(describeEvent(e))}</li>`).join("");
   return `<div class="event-log"><h3>Play-by-play</h3><ul>${items}</ul></div>`;
 }

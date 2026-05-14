@@ -43,6 +43,25 @@ describe("AI / chooseBatterCard", () => {
       expect(card).not.toBe("StolenBase");
     }
   });
+
+  it("throws when asked to choose from an empty batter hand", () => {
+    const ai = createAi(createRng(1), "Away");
+    expect(() => ai.chooseBatterCard([], {
+      inning: 1, inningsConfigured: 3, half: "Top", outs: 0,
+      bases: { first: null, second: null, third: null },
+      myScore: 0, opponentScore: 0,
+    }, player())).toThrow("AI has no batter cards");
+  });
+
+  it("still returns a valid card when batter weights collapse to zero", () => {
+    const ai = createAi(createRng(3), "Away");
+    const card = ai.chooseBatterCard(["StolenBase"], {
+      inning: 1, inningsConfigured: 3, half: "Top", outs: 0,
+      bases: { first: null, second: null, third: null },
+      myScore: 0, opponentScore: 0,
+    }, player());
+    expect(card).toBe("StolenBase");
+  });
 });
 
 describe("AI / choosePitcherCard", () => {
@@ -57,6 +76,15 @@ describe("AI / choosePitcherCard", () => {
       }, player());
       expect(fullPitcherHand).toContain(card);
     }
+  });
+
+  it("throws when asked to choose from an empty pitcher hand", () => {
+    const ai = createAi(createRng(1), "Home");
+    expect(() => ai.choosePitcherCard([], {
+      inning: 1, inningsConfigured: 3, half: "Top", outs: 0,
+      bases: { first: null, second: null, third: null },
+      myScore: 0, opponentScore: 0,
+    }, player())).toThrow("AI has no pitcher cards");
   });
 });
 

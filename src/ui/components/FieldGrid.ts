@@ -39,7 +39,7 @@ const polar = (r: number, theta: number): [number, number] => [
   HOME_Y + r * Math.sin(theta),
 ];
 
-function wedgePath(rIn: number, rOut: number, ciStart = 0, ciEnd = NUM_COLS): string {
+function wedgePath(rIn: number, rOut: number, ciStart: number = 0, ciEnd: number = NUM_COLS): string {
   const thetaL = angleAt(ciStart);
   const thetaR = angleAt(ciEnd);
   const [x1, y1] = polar(rIn, thetaL);
@@ -70,7 +70,6 @@ export function renderFieldGrid(props: FieldGridProps): string {
   for (let r = 1; r <= NUM_ROWS; r++) {
     for (let ci = 0; ci < NUM_COLS; ci++) {
       const col = COLUMNS[ci] as Column;
-      const row = r as Row;
       const isError = col === DEFAULT_ERROR_SQUARE.col && r === DEFAULT_ERROR_SQUARE.row;
       const isFence = r === FENCE_ROW;
       const isDirH = props.highlightDirection === col;

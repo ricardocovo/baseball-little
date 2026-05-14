@@ -25,6 +25,7 @@ import {
   renderScoreboard,
 } from "./components/Scoreboard.ts";
 import { describeEvent, renderEventLog } from "./components/EventLog.ts";
+import { renderBattingOrder } from "./components/BattingOrder.ts";
 
 type AppPhase =
   | { kind: "Setup"; values: SetupValues }
@@ -91,7 +92,7 @@ export class App {
         break;
       case "GameOver": {
         const goSnap = this.game.snapshot();
-        html = `<div class="game-frame">${renderGameHeader(goSnap)}<div class="game-content"><div class="content-main"><div class="scoreboard-panel">${renderScoreboard(goSnap)}</div>${renderGameOver(goSnap)}</div><aside class="content-sidebar">${renderEventLog(this.events)}</aside></div></div>`;
+        html = `<div class="game-frame"><div class="game-main">${renderGameHeader(goSnap)}<div class="game-content"><div class="content-main"><div class="scoreboard-panel">${renderScoreboard(goSnap)}</div>${renderGameOver(goSnap)}</div></div></div><aside class="content-sidebar">${renderBattingOrder(goSnap)}${renderEventLog(this.events)}</aside></div>`;
         break;
       }
     }
@@ -133,15 +134,17 @@ export class App {
 
     return `
       <div class="game-frame">
-        ${top}
-        <div class="game-content">
-          <div class="content-main">
-            ${sb}
-            <div class="game-action">${main}</div>
+        <div class="game-main">
+          ${top}
+          <div class="game-content">
+            <div class="content-main">
+              ${sb}
+              <div class="game-action">${main}</div>
+            </div>
           </div>
-          <aside class="content-sidebar">${renderEventLog(this.events)}</aside>
+          ${handHtml}
         </div>
-        ${handHtml}
+        <aside class="content-sidebar">${renderBattingOrder(snap)}${renderEventLog(this.events)}</aside>
       </div>`;
   }
 

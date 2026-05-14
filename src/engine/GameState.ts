@@ -530,18 +530,6 @@ export class Game {
       this.state.inning += 1;
     }
 
-    // Reset both teams' decks to full at the start of each half-inning.
-    this.state.decks = {
-      home: {
-        batter: createBatterDeck(this.state.format),
-        pitcher: createPitcherDeck(this.state.format),
-      },
-      away: {
-        batter: createBatterDeck(this.state.format),
-        pitcher: createPitcherDeck(this.state.format),
-      },
-    };
-
     if (this.state.inning > this.state.inningsConfigured) {
       this.gameOver("InningsCompleted", events);
     }

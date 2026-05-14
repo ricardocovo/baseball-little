@@ -7,17 +7,22 @@ import {
 } from "../src/domain/players.ts";
 import type { GameEvent } from "../src/engine/events.ts";
 
-function newGame(seed = 1) {
+function newGame(opts: {
+  seed?: number;
+  innings?: number;
+  humanSide?: "Home" | "Away";
+  firstAtBat?: "Home" | "Away";
+} = {}) {
   const home = createTeam("h", "Home", defaultHumanLineup("h"));
   const away = createTeam("a", "Away", defaultComputerLineup("a"));
   const g = new Game();
   const events = g.start({
     format: "Reduced",
-    innings: 3,
+    innings: opts.innings ?? 3,
     teams: { home, away },
-    humanSide: "Away",
-    seed,
-    firstAtBat: "Away",
+    humanSide: opts.humanSide ?? "Away",
+    seed: opts.seed ?? 1,
+    firstAtBat: opts.firstAtBat ?? "Away",
   });
   return { g, startEvents: events };
 }
@@ -73,7 +78,7 @@ describe("Game / walk", () => {
 
 describe("Game / hit -> field flow", () => {
   it("Hit transitions to AwaitingFielding -> direction -> depth -> resolved", () => {
-    const { g } = newGame(7);
+    const { g } = newGame({ seed: 7 });
     // HighSwing vs FastHigh = Hit
     g.playCards("HighSwing", "FastHigh");
     expect(g.snapshot().status).toBe("AwaitingFielding");
@@ -95,6 +100,116 @@ describe("Game / hit -> field flow", () => {
     expect(types).toContain("HitClassified");
     // Either advanced to next at-bat or game continues normally.
     expect(["AwaitingPitch", "GameOver"]).toContain(g.snapshot().status);
+  });
+});
+
+describe("Game / event contracts and guards", () => {
+  it("streams emitted events to subscribers and stops after unsubscribe", () => {
+    const { g } = newGame();
+    const seen: GameEvent[] = [];
+    const unsubscribe = g.subscribe((event) => seen.push(event));
+
+    const emitted = g.playCards("HighSwing", "FastLow");
+    expect(seen).toEqual(emitted);
+
+    unsubscribe();
+    g.playCards("LowSwing", "FastHigh");
+    expect(seen).toEqual(emitted);
+  });
+
+  it("failed card validation does not mutate state or emit events", () => {
+    const { g } = newGame();
+    const seen: GameEvent[] = [];
+    g.subscribe((event) => seen.push(event));
+
+    g.playCards("Box", "NoPitch");
+    const before = g.snapshot();
+    const emittedBefore = seen.length;
+
+    expect(() => g.playCards("Box", "FastHigh")).toThrow("Batter card Box not in offense hand");
+    expect(g.snapshot()).toEqual(before);
+    expect(seen).toHaveLength(emittedBefore);
+  });
+
+  it("throws when an action is invoked in the wrong state", () => {
+    const { g } = newGame();
+    expect(() => g.spinHitDirection()).toThrow("Expected status AwaitingDirectionSpin but was AwaitingPitch");
+  });
+
+  it("rejects fielder submissions with anything other than 7 coordinates", () => {
+    const { g } = newGame();
+    g.playCards("HighSwing", "FastHigh");
+
+    expect(() => g.submitFielders([
+      { col: "C", row: 4 }, { col: "G", row: 4 }, { col: "J", row: 4 },
+      { col: "C", row: 8 }, { col: "H", row: 8 }, { col: "M", row: 8 },
+    ])).toThrow("Expected exactly 7 fielders");
+    expect(g.snapshot().status).toBe("AwaitingFielding");
+  });
+});
+
+describe("Game / innings bookkeeping", () => {
+  it("does not replenish decks when a half-inning ends", () => {
+    const { g } = newGame();
+
+    // Finish the top half without reusing the home pitcher's burned cards.
+    g.playCards("HighSwing", "FastLow");
+    g.playCards("LowSwing", "CurveHigh");
+    g.playCards("FlatSwing", "FastInside");
+
+    const snap = g.snapshot();
+    expect(snap.half).toBe("Bottom");
+    expect(snap.decks.away.batter).toHaveLength(9);
+    expect(snap.decks.home.pitcher).toHaveLength(9);
+    expect(snap.decks.home.batter).toHaveLength(12);
+    expect(snap.decks.away.pitcher).toHaveLength(12);
+  });
+
+  it("records line scores and winner for a one-inning game", () => {
+    const { g } = newGame({ seed: 5, innings: 1, humanSide: "Home" });
+
+    g.playCards("HighSwing", "FastHigh");
+    g.submitFielders([
+      { col: "A", row: 2 }, { col: "B", row: 2 }, { col: "C", row: 2 }, { col: "D", row: 2 },
+      { col: "E", row: 2 }, { col: "F", row: 2 }, { col: "G", row: 2 },
+    ]);
+    g.spinHitDirection();
+    g.spinHitDepth();
+
+    g.playCards("LowSwing", "CurveHigh");
+    g.playCards("FlatSwing", "FastInside");
+    g.playCards("HighSwing", "CurveLow");
+
+    g.playCards("HighSwing", "FastLow");
+    g.playCards("LowSwing", "FastHigh");
+    g.playCards("FlatSwing", "FastInside");
+
+    const snap = g.snapshot();
+    expect(snap.status).toBe("GameOver");
+    expect(snap.lineScore.away).toEqual([1]);
+    expect(snap.lineScore.home).toEqual([0]);
+    expect(snap.score).toEqual({ away: 1, home: 0 });
+    expect(snap.winner).toBe("Away");
+    expect(snap.gameOverReason).toBe("InningsCompleted");
+  });
+
+  it("declares a tie when the configured innings end level", () => {
+    const { g } = newGame({ innings: 1 });
+
+    g.playCards("HighSwing", "FastLow");
+    g.playCards("LowSwing", "FastHigh");
+    g.playCards("FlatSwing", "FastInside");
+
+    g.playCards("HighSwing", "FastLow");
+    g.playCards("LowSwing", "FastHigh");
+    g.playCards("FlatSwing", "FastInside");
+
+    const snap = g.snapshot();
+    expect(snap.status).toBe("GameOver");
+    expect(snap.lineScore.away).toEqual([0]);
+    expect(snap.lineScore.home).toEqual([0]);
+    expect(snap.winner).toBe("Tie");
+    expect(snap.gameOverReason).toBe("InningsCompleted");
   });
 });
 
