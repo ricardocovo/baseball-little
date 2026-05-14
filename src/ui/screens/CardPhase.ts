@@ -6,6 +6,7 @@ import {
   BATTER_CARD_IMAGES,
   PITCHER_CARD_IMAGES,
 } from "../../domain/cards.ts";
+import { getCardImageSrc } from "../assets/cardImages.ts";
 import { renderBatterHand, renderPitcherHand, cardBack } from "../components/Hand.ts";
 
 export type CardPhaseProps = {
@@ -38,7 +39,7 @@ export function renderCardPhase(props: CardPhaseProps): string {
     if (!sel) return cardBack(kind);
     const text = kind === "batter" ? BATTER_CARD_LABELS[sel as BatterCard] : PITCHER_CARD_LABELS[sel as PitcherCard];
     const imgFile = kind === "batter" ? BATTER_CARD_IMAGES[sel as BatterCard] : PITCHER_CARD_IMAGES[sel as PitcherCard];
-    const imgSrc = `/src/images/${imgFile}`;
+    const imgSrc = getCardImageSrc(imgFile);
     return `<div class="card ${kind} revealed" aria-label="${label}: ${text}"><img class="card-img" src="${imgSrc}" alt="${text}" /></div>`;
   };
 

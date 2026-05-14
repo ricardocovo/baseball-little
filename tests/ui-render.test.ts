@@ -5,6 +5,7 @@ import type { GameSnapshot } from "../src/engine/GameState.ts";
 import { renderEventLog } from "../src/ui/components/EventLog.ts";
 import { renderGameHeader, renderScoreboard } from "../src/ui/components/Scoreboard.ts";
 import { renderCardHand, renderCardPhase } from "../src/ui/screens/CardPhase.ts";
+import { getCardImageSrc } from "../src/ui/assets/cardImages.ts";
 import { defaultSetupValues, readSetup, renderSetup } from "../src/ui/screens/Setup.ts";
 
 function makeSnapshot(): GameSnapshot {
@@ -113,6 +114,8 @@ describe("UI render helpers", () => {
     expect(html).toContain("Ball in play!");
     expect(html).toContain("High Swing");
     expect(html).toContain("High Fastball");
+    expect(html).toContain(getCardImageSrc("high-swing.png"));
+    expect(html).toContain(getCardImageSrc("high-fastball.png"));
   });
 
   it("groups duplicate cards in the hand and hides the hand once revealed", () => {
@@ -128,6 +131,8 @@ describe("UI render helpers", () => {
 
     expect(hidden).toContain("Your hand (batter)");
     expect(hidden).toContain("×2");
+    expect(hidden).toContain(getCardImageSrc("high-swing.png"));
+    expect(hidden).toContain(getCardImageSrc("box.png"));
     expect(renderCardHand({
       snap,
       humanRole: "batter",

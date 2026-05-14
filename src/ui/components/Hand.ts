@@ -1,5 +1,6 @@
 import type { BatterCard, PitcherCard } from "../../domain/cards.ts";
 import { BATTER_CARD_LABELS, PITCHER_CARD_LABELS, BATTER_CARD_IMAGES, PITCHER_CARD_IMAGES } from "../../domain/cards.ts";
+import { getCardImageSrc } from "../assets/cardImages.ts";
 
 export function renderBatterHand(
   hand: readonly BatterCard[],
@@ -40,7 +41,7 @@ function renderHand<T extends string>(
   const cards: string[] = [];
   for (const [card, count] of counts.entries()) {
     const sel = selected === card ? "selected" : "";
-    const imgSrc = `/src/images/${image(card)}`;
+    const imgSrc = getCardImageSrc(image(card));
     cards.push(`
       <button class="card ${kind} ${sel}" data-card="${card}" aria-label="${label(card)}">
         <img class="card-img" src="${imgSrc}" alt="${label(card)}" />
