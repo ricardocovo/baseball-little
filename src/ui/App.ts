@@ -10,11 +10,11 @@ import type { Ai } from "../ai/Ai.ts";
 import { createAi, defaultFielderPlacement } from "../ai/Ai.ts";
 import { createRng } from "../engine/rng.ts";
 import {
-  defaultSetupValues,
   readSetup,
   renderSetup,
   type SetupValues,
 } from "./screens/Setup.ts";
+import { loadSetupValues, saveSetupValues } from "./screens/setupStorage.ts";
 import { renderCoinFlip } from "./screens/CoinFlip.ts";
 import { renderCardPhase, renderCardHand } from "./screens/CardPhase.ts";
 import { renderFieldPhase } from "./screens/FieldPhase.ts";
@@ -61,7 +61,7 @@ const AI_THINK_MS = 600;
 
 export class App {
   private root: HTMLElement;
-  private phase: AppPhase = { kind: "Setup", values: defaultSetupValues() };
+  private phase: AppPhase = { kind: "Setup", values: loadSetupValues() };
   private game = new Game();
   private events: GameEvent[] = [];
   private cardUi?: CardPhaseUiState;
@@ -154,6 +154,7 @@ export class App {
         if (this.phase.kind !== "Setup") return;
         const values = readSetup(this.root, this.phase.values);
         this.phase.values = values;
+        saveSetupValues(values);
         this.startCoinFlip();
       });
     } else if (this.phase.kind === "CoinFlip") {
@@ -165,7 +166,7 @@ export class App {
       this.bindPlayingEvents();
     } else if (this.phase.kind === "GameOver") {
       this.root.querySelector<HTMLButtonElement>("#new-game")?.addEventListener("click", () => {
-        this.phase = { kind: "Setup", values: defaultSetupValues() };
+        this.phase = { kind: "Setup", values: loadSetupValues() };
         this.events = [];
         this.cardUi = undefined as CardPhaseUiState | undefined;
         this.fieldUi = undefined as FieldPhaseUiState | undefined;
