@@ -10,6 +10,8 @@ import type { Ai } from "../ai/Ai.ts";
 import { createAi, defaultFielderPlacement } from "../ai/Ai.ts";
 import { createRng } from "../engine/rng.ts";
 import {
+  compositionErrorsFor,
+  isSetupValid,
   readSetup,
   renderSetup,
   type SetupValues,
@@ -150,10 +152,48 @@ export class App {
 
   private bindEvents(): void {
     if (this.phase.kind === "Setup") {
-      this.root.querySelector<HTMLButtonElement>("#start")?.addEventListener("click", () => {
+      const startBtn = this.root.querySelector<HTMLButtonElement>("#start");
+      const refreshValidation = (): void => {
         if (this.phase.kind !== "Setup") return;
         const values = readSetup(this.root, this.phase.values);
         this.phase.values = values;
+        const errors = compositionErrorsFor(values);
+        if (startBtn) startBtn.disabled = errors.length > 0;
+        const errBox = this.root.querySelector<HTMLElement>("#composition-errors");
+        if (errors.length === 0) {
+          if (errBox) errBox.remove();
+        } else {
+          const html = errors
+            .map((e) => `<div>${escapeText(e)}</div>`)
+            .join("");
+          if (errBox) {
+            errBox.innerHTML = html;
+          } else {
+            const actions = this.root.querySelector(".setup .actions");
+            if (actions && startBtn) {
+              const div = document.createElement("div");
+              div.id = "composition-errors";
+              div.className = "composition-errors";
+              div.setAttribute("role", "alert");
+              div.innerHTML = html;
+              actions.insertBefore(div, startBtn);
+            }
+          }
+        }
+      };
+      this.root
+        .querySelectorAll<HTMLSelectElement>("select.strength")
+        .forEach((sel) => sel.addEventListener("change", refreshValidation));
+      startBtn?.addEventListener("click", () => {
+        if (this.phase.kind !== "Setup") return;
+        const values = readSetup(this.root, this.phase.values);
+        this.phase.values = values;
+        if (!isSetupValid(values)) {
+          const errors = compositionErrorsFor(values);
+          alert(errors.join("\n"));
+          refreshValidation();
+          return;
+        }
         saveSetupValues(values);
         this.startCoinFlip();
       });
@@ -500,6 +540,13 @@ export class App {
       this.render();
     }
   }
+}
+
+function escapeText(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 function sideKey(side: TeamSide): "home" | "away" {

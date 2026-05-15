@@ -3,6 +3,8 @@ import type { Handedness, Player, Strength } from "../../domain/players.ts";
 import {
   defaultComputerLineup,
   defaultHumanLineup,
+  validateStrengthComposition,
+  type LineupCompositionResult,
 } from "../../domain/players.ts";
 
 export type SetupValues = {
@@ -89,10 +91,44 @@ export function renderSetup(values: SetupValues): string {
       </div>
 
       <div class="actions">
-        <button id="start" class="primary">Play ball ⚾</button>
+        ${renderCompositionMessages(values)}
+        <button id="start" class="primary"${isSetupValid(values) ? "" : " disabled"}>Play ball ⚾</button>
       </div>
     </section>
   `;
+}
+
+export function isSetupValid(values: SetupValues): boolean {
+  return (
+    validateStrengthComposition(values.humanLineup).valid &&
+    validateStrengthComposition(values.computerLineup).valid
+  );
+}
+
+export function formatCompositionError(
+  teamName: string,
+  result: LineupCompositionResult,
+): string {
+  const { Light, Medium, Heavy } = result.counts;
+  return `${teamName} must have exactly 3 Light, 3 Medium, and 3 Heavy batters (have ${Light} Light, ${Medium} Medium, ${Heavy} Heavy).`;
+}
+
+export function compositionErrorsFor(values: SetupValues): string[] {
+  const errors: string[] = [];
+  const human = validateStrengthComposition(values.humanLineup);
+  if (!human.valid) errors.push(formatCompositionError(values.humanTeamName, human));
+  const computer = validateStrengthComposition(values.computerLineup);
+  if (!computer.valid)
+    errors.push(formatCompositionError(values.computerTeamName, computer));
+  return errors;
+}
+
+function renderCompositionMessages(values: SetupValues): string {
+  const errors = compositionErrorsFor(values);
+  if (errors.length === 0) return "";
+  return `<div id="composition-errors" class="composition-errors" role="alert">${errors
+    .map((e) => `<div>${escapeText(e)}</div>`)
+    .join("")}</div>`;
 }
 
 export function readSetup(root: HTMLElement, current: SetupValues): SetupValues {
@@ -120,4 +156,11 @@ export function readSetup(root: HTMLElement, current: SetupValues): SetupValues 
 
 function escapeAttr(s: string): string {
   return s.replace(/"/g, "&quot;");
+}
+
+function escapeText(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }

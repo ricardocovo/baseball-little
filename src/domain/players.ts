@@ -24,6 +24,33 @@ export function createTeam(id: string, name: string, lineup: readonly Player[]):
   return { id, name, lineup };
 }
 
+export type StrengthCounts = Readonly<Record<Strength, number>>;
+
+export type LineupCompositionResult = {
+  valid: boolean;
+  counts: StrengthCounts;
+};
+
+/** Required count for each Strength in a valid 9-player lineup. */
+export const REQUIRED_STRENGTH_COUNT = 3;
+
+export function countByStrength(lineup: readonly Player[]): StrengthCounts {
+  const counts: Record<Strength, number> = { Light: 0, Medium: 0, Heavy: 0 };
+  for (const p of lineup) counts[p.strength]++;
+  return counts;
+}
+
+export function validateStrengthComposition(
+  lineup: readonly Player[],
+): LineupCompositionResult {
+  const counts = countByStrength(lineup);
+  const valid =
+    counts.Light === REQUIRED_STRENGTH_COUNT &&
+    counts.Medium === REQUIRED_STRENGTH_COUNT &&
+    counts.Heavy === REQUIRED_STRENGTH_COUNT;
+  return { valid, counts };
+}
+
 export function batterAt(team: Team, index: number): Player {
   const i = ((index % 9) + 9) % 9;
   return team.lineup[i] as Player;
