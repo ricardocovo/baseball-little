@@ -21,6 +21,7 @@ export type GameEvent =
   | { type: "ErrorOnField"; landing: Coord }
   | { type: "HalfInningEnded"; inning: number; half: Half; runsThisHalf: number }
   | { type: "HandExhausted"; side: TeamSide; role: "batter" | "pitcher" }
+  | { type: "HandsReplenished"; inning: number; half: Half }
   | { type: "GameOver"; reason: GameOverReason; winner: TeamSide | "Tie"; finalScore: { home: number; away: number } };
 
 export type BaseLabel = "First" | "Second" | "Third";

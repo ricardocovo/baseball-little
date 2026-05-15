@@ -47,6 +47,8 @@ export function describeEvent(e: GameEvent): string {
       return `End of ${e.half} ${e.inning}: ${e.runsThisHalf} run${e.runsThisHalf === 1 ? "" : "s"}.`;
     case "HandExhausted":
       return `${e.side} ran out of ${e.role} cards.`;
+    case "HandsReplenished":
+      return `Hands replenished for ${e.half} ${e.inning}.`;
     case "GameOver":
       return `GAME OVER — ${e.winner === "Tie" ? "tie" : `${e.winner} wins`} ${e.finalScore.away}–${e.finalScore.home}.`;
   }

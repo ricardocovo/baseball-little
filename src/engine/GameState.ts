@@ -532,7 +532,25 @@ export class Game {
 
     if (this.state.inning > this.state.inningsConfigured) {
       this.gameOver("InningsCompleted", events);
+      return;
     }
+
+    // Each half-inning starts with full hands for both teams.
+    this.replenishAllHands();
+    this.emit({ type: "HandsReplenished", inning: this.state.inning, half: this.state.half }, events);
+  }
+
+  private replenishAllHands(): void {
+    this.state.decks = {
+      home: {
+        batter: createBatterDeck(this.state.format),
+        pitcher: createPitcherDeck(this.state.format),
+      },
+      away: {
+        batter: createBatterDeck(this.state.format),
+        pitcher: createPitcherDeck(this.state.format),
+      },
+    };
   }
 
   private checkHandExhaustion(events: GameEvent[]): boolean {

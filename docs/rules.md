@@ -20,6 +20,8 @@ The pitcher has the following cards: High Fastball, High Curve, High Slider, Low
 
 Cards are played by voluntary choice of the player. They are not thrown at random. Once chosen and played, the card is not picked back up — it is discarded.
 
+At the start of every half-inning, both players' hands are replenished to their full set of cards (batter and pitcher decks). Cards are only "spent" within the current half-inning.
+
 ### WHAT IS THE PURPOSE OF THE CARDS?
 
 The cards drive the game because through them I gain access to the play. There are batting cards, pitching cards, and strategy cards. With the batting cards the batter connects, but then must gain access to the play, and the fielding player places their fielders according to the type of batter (depending on whether they are right-handed or left-handed, a power hitter, or a contact hitter).

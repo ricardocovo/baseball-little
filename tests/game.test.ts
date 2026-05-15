@@ -149,20 +149,23 @@ describe("Game / event contracts and guards", () => {
 });
 
 describe("Game / innings bookkeeping", () => {
-  it("does not replenish decks when a half-inning ends", () => {
+  it("replenishes both teams' decks when a half-inning ends", () => {
     const { g } = newGame();
+    const initial = g.snapshot();
+    const fullBatter = initial.decks.away.batter.length;
+    const fullPitcher = initial.decks.home.pitcher.length;
 
-    // Finish the top half without reusing the home pitcher's burned cards.
+    // Finish the top half — cards burned during the half are restored.
     g.playCards("HighSwing", "FastLow");
     g.playCards("LowSwing", "CurveHigh");
     g.playCards("FlatSwing", "FastInside");
 
     const snap = g.snapshot();
     expect(snap.half).toBe("Bottom");
-    expect(snap.decks.away.batter).toHaveLength(9);
-    expect(snap.decks.home.pitcher).toHaveLength(9);
-    expect(snap.decks.home.batter).toHaveLength(12);
-    expect(snap.decks.away.pitcher).toHaveLength(12);
+    expect(snap.decks.away.batter).toHaveLength(fullBatter);
+    expect(snap.decks.home.pitcher).toHaveLength(fullPitcher);
+    expect(snap.decks.home.batter).toHaveLength(fullBatter);
+    expect(snap.decks.away.pitcher).toHaveLength(fullPitcher);
   });
 
   it("records line scores and winner for a one-inning game", () => {
@@ -210,6 +213,31 @@ describe("Game / innings bookkeeping", () => {
     expect(snap.lineScore.home).toEqual([0]);
     expect(snap.winner).toBe("Tie");
     expect(snap.gameOverReason).toBe("InningsCompleted");
+  });
+});
+
+describe("Game / hand replenishment", () => {
+  it("refills both teams' hands at the start of every half-inning", () => {
+    const { g } = newGame({ innings: 2 });
+    const initial = g.snapshot();
+    const fullBatter = initial.decks.away.batter.length;
+    const fullPitcher = initial.decks.home.pitcher.length;
+    expect(fullBatter).toBeGreaterThan(0);
+    expect(fullPitcher).toBeGreaterThan(0);
+
+    // Top 1: away bats — 3 strikeouts to end the half.
+    g.playCards("HighSwing", "FastLow");
+    g.playCards("LowSwing", "FastHigh");
+    g.playCards("FlatSwing", "FastInside");
+
+    const afterTop1 = g.snapshot();
+    // Half should have advanced and decks must be back to full.
+    expect(afterTop1.half).toBe("Bottom");
+    expect(afterTop1.inning).toBe(1);
+    expect(afterTop1.decks.away.batter.length).toBe(fullBatter);
+    expect(afterTop1.decks.home.batter.length).toBe(fullBatter);
+    expect(afterTop1.decks.away.pitcher.length).toBe(fullPitcher);
+    expect(afterTop1.decks.home.pitcher.length).toBe(fullPitcher);
   });
 });
 
