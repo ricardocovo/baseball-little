@@ -1,4 +1,5 @@
 import type { GameSnapshot } from "../../engine/GameState.ts";
+import { getLocale, t } from "../../i18n/i18n.ts";
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) =>
@@ -7,17 +8,24 @@ function escapeHtml(s: string): string {
 }
 
 function ordinal(n: number): string {
-  const v = n % 100;
-  if (v >= 11 && v <= 13) return n + "th";
-  switch (v % 10) {
-    case 1: return n + "st";
-    case 2: return n + "nd";
-    case 3: return n + "rd";
-    default: return n + "th";
+  if (getLocale() === "es") {
+    // Spanish ordinals — "1.ª", "2.ª", … (feminine, since "entrada" is feminine).
+    return t("scoreboard.ordinal", { n, suffix: "ª" });
   }
+  const v = n % 100;
+  let suffix: string;
+  if (v >= 11 && v <= 13) suffix = "th";
+  else
+    switch (v % 10) {
+      case 1: suffix = "st"; break;
+      case 2: suffix = "nd"; break;
+      case 3: suffix = "rd"; break;
+      default: suffix = "th"; break;
+    }
+  return t("scoreboard.ordinal", { n, suffix });
 }
 
-/* ─── Scoreboard row: line score + inning/outs/bases status (merged header) ─── */
+/* ─── Scoreboard row: line score + inning/outs/bases status ─── */
 
 export function renderScoreboard(snap: GameSnapshot): string {
   const cur = snap.inning - 1;
@@ -44,10 +52,11 @@ export function renderScoreboard(snap: GameSnapshot): string {
   const arrow = snap.half === "Top" ? "▲" : "▼";
   const inningOrd = ordinal(snap.inning);
   const occ = (b: { id?: string } | null | undefined) => (b ? "occupied" : "");
+  const outsLabel = snap.outs !== 1 ? t("scoreboard.outs") : t("scoreboard.out");
 
   const status = `
     <div class="header-status" aria-label="game status">
-      <div class="inning-text">${arrow} ${inningOrd.toUpperCase()}, ${snap.outs} OUT${snap.outs !== 1 ? "S" : ""}</div>
+      <div class="inning-text">${arrow} ${inningOrd.toUpperCase()}, ${snap.outs} ${outsLabel}</div>
       <div class="diamond-mini" aria-label="bases">
         <div class="mini-base second ${occ(snap.bases.second)}"></div>
         <div class="mini-base third ${occ(snap.bases.third)}"></div>
@@ -62,7 +71,7 @@ export function renderScoreboard(snap: GameSnapshot): string {
   return `
     <div class="scoreboard-row">
       <table class="scoreboard">
-        <thead><tr><th class="team-cell"></th>${header}<th class="total">R</th></tr></thead>
+        <thead><tr><th class="team-cell"></th>${header}<th class="total">${t("scoreboard.runs")}</th></tr></thead>
         <tbody>
           ${lineRow(snap.teams.away.name, snap.lineScore.away, snap.score.away, "away")}
           ${lineRow(snap.teams.home.name, snap.lineScore.home, snap.score.home, "home")}

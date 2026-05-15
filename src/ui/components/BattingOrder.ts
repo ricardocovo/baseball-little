@@ -1,5 +1,6 @@
 import type { GameSnapshot } from "../../engine/GameState.ts";
 import type { TeamSide } from "../../domain/players.ts";
+import { t } from "../../i18n/i18n.ts";
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({
@@ -24,8 +25,8 @@ export function renderBattingOrder(snap: GameSnapshot): string {
 
   const rows = team.lineup.map((player, i) => {
     const isActive = i === activeMod && snap.status !== "GameOver";
-    const strengthLabel = player.strength.toLowerCase();
-    const handLabel = player.handedness[0];
+    const strengthLabel = t(`strength.${player.strength}`).toLowerCase();
+    const handLabel = t(`handedness.${player.handedness}`)[0] ?? "";
     return `
       <li class="bo-row${isActive ? " bo-row--active" : ""}">
         <span class="bo-slot">${i + 1}</span>
@@ -37,7 +38,7 @@ export function renderBattingOrder(snap: GameSnapshot): string {
 
   return `
     <div class="batting-order">
-      <h3>Batting Order</h3>
+      <h3>${t("battingOrder.title")}</h3>
       <p class="bo-team-name">${escapeHtml(team.name)}</p>
       <ol class="bo-list">${rows}</ol>
     </div>`;

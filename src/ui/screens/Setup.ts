@@ -6,6 +6,7 @@ import {
   validateStrengthComposition,
   type LineupCompositionResult,
 } from "../../domain/players.ts";
+import { t } from "../../i18n/i18n.ts";
 
 export type SetupValues = {
   format: DeckFormat;
@@ -38,12 +39,12 @@ export function renderSetup(values: SetupValues): string {
           <td><input class="name" data-side="${side}" data-i="${i}" value="${escapeAttr(p.name)}" /></td>
           <td>
             <select class="strength" data-side="${side}" data-i="${i}">
-              ${strengthOpts.map((s) => `<option value="${s}" ${s === p.strength ? "selected" : ""}>${s}</option>`).join("")}
+              ${strengthOpts.map((s) => `<option value="${s}" ${s === p.strength ? "selected" : ""}>${t(`strength.${s}`)}</option>`).join("")}
             </select>
           </td>
           <td>
             <select class="handed" data-side="${side}" data-i="${i}">
-              ${handedOpts.map((h) => `<option value="${h}" ${h === p.handedness ? "selected" : ""}>${h}</option>`).join("")}
+              ${handedOpts.map((h) => `<option value="${h}" ${h === p.handedness ? "selected" : ""}>${t(`handedness.${h}`)}</option>`).join("")}
             </select>
           </td>
         </tr>
@@ -52,15 +53,15 @@ export function renderSetup(values: SetupValues): string {
 
   return `
     <section class="setup">
-      <h2>Game Setup</h2>
+      <h2>${t("setup.title")}</h2>
       <div class="form-row">
-        <label>Format
+        <label>${t("setup.formatLabel")}
           <select id="format">
-            <option value="Reduced" ${values.format === "Reduced" ? "selected" : ""}>Reduced (12 / 12)</option>
-            <option value="Classic" ${values.format === "Classic" ? "selected" : ""}>Classic (16 / 12)</option>
+            <option value="Reduced" ${values.format === "Reduced" ? "selected" : ""}>${t("setup.formatReduced")}</option>
+            <option value="Classic" ${values.format === "Classic" ? "selected" : ""}>${t("setup.formatClassic")}</option>
           </select>
         </label>
-        <label>Innings
+        <label>${t("setup.inningsLabel")}
           <select id="innings">
             <option value="3" ${values.innings === 3 ? "selected" : ""}>3</option>
             <option value="6" ${values.innings === 6 ? "selected" : ""}>6</option>
@@ -71,20 +72,20 @@ export function renderSetup(values: SetupValues): string {
 
       <div class="lineups">
         <div class="lineup">
-          <h3>Your team
+          <h3>${t("setup.yourTeam")}
             <input id="humanTeamName" value="${escapeAttr(values.humanTeamName)}" />
           </h3>
           <table>
-            <thead><tr><th>#</th><th>Name</th><th>Strength</th><th>Handed</th></tr></thead>
+            <thead><tr><th>${t("setup.colNumber")}</th><th>${t("setup.colName")}</th><th>${t("setup.colStrength")}</th><th>${t("setup.colHanded")}</th></tr></thead>
             <tbody>${lineupRows(values.humanLineup, "human")}</tbody>
           </table>
         </div>
         <div class="lineup">
-          <h3>Computer team
+          <h3>${t("setup.computerTeam")}
             <input id="computerTeamName" value="${escapeAttr(values.computerTeamName)}" />
           </h3>
           <table>
-            <thead><tr><th>#</th><th>Name</th><th>Strength</th><th>Handed</th></tr></thead>
+            <thead><tr><th>${t("setup.colNumber")}</th><th>${t("setup.colName")}</th><th>${t("setup.colStrength")}</th><th>${t("setup.colHanded")}</th></tr></thead>
             <tbody>${lineupRows(values.computerLineup, "computer")}</tbody>
           </table>
         </div>
@@ -92,7 +93,7 @@ export function renderSetup(values: SetupValues): string {
 
       <div class="actions">
         ${renderCompositionMessages(values)}
-        <button id="start" class="primary"${isSetupValid(values) ? "" : " disabled"}>Play ball ⚾</button>
+        <button id="start" class="primary"${isSetupValid(values) ? "" : " disabled"}>${t("setup.playBall")}</button>
       </div>
     </section>
   `;
@@ -110,7 +111,12 @@ export function formatCompositionError(
   result: LineupCompositionResult,
 ): string {
   const { Light, Medium, Heavy } = result.counts;
-  return `${teamName} must have exactly 3 Light, 3 Medium, and 3 Heavy batters (have ${Light} Light, ${Medium} Medium, ${Heavy} Heavy).`;
+  return t("setup.compositionError", {
+    team: teamName,
+    light: Light,
+    medium: Medium,
+    heavy: Heavy,
+  });
 }
 
 export function compositionErrorsFor(values: SetupValues): string[] {

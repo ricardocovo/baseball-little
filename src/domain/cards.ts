@@ -90,30 +90,6 @@ export function pitcherDeckSize(_format: DeckFormat): number {
   return 12;
 }
 
-export const BATTER_CARD_LABELS: Record<BatterCard, string> = {
-  HighSwing: "High Swing",
-  LowSwing: "Low Swing",
-  FlatSwing: "Flat Swing",
-  HitAndRun: "Hit & Run",
-  Walk: "Walk",
-  StolenBase: "Stolen Base",
-  Sacrifice: "Sacrifice",
-  Box: "Box",
-};
-
-export const PITCHER_CARD_LABELS: Record<PitcherCard, string> = {
-  FastHigh: "High Fastball",
-  FastLow: "Low Fastball",
-  FastInside: "Inside Fastball",
-  CurveHigh: "High Curve",
-  CurveLow: "Low Curve",
-  CurveOutside: "Outside Curve",
-  SliderHigh: "High Slider",
-  SliderLow: "Low Slider",
-  SliderInside: "Inside Slider",
-  NoPitch: "No Pitch",
-};
-
 export const BATTER_CARD_IMAGES: Record<BatterCard, string> = {
   HighSwing: "high-swing.png",
   LowSwing: "low-swing.png",

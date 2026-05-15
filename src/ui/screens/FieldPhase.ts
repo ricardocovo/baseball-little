@@ -4,6 +4,7 @@ import { COLUMNS, pitcherPositionFor } from "../../domain/field.ts";
 import type { Player } from "../../domain/players.ts";
 import { renderFieldGrid } from "../components/FieldGrid.ts";
 import { renderSpinner } from "../components/Spinner.ts";
+import { t } from "../../i18n/i18n.ts";
 
 export type FieldPhaseProps = {
   humanIsDefense: boolean;
@@ -45,10 +46,10 @@ export function renderFieldPhase(props: FieldPhaseProps): string {
   let dirAction = "";
   if (phase === "AwaitingDirectionSpin") {
     dirAction = humanIsDefense
-      ? `<span class="spinner-status">Opponent spinning…</span>`
-      : `<button id="spin-direction" class="primary spinner-btn">🎯 Spin</button>`;
+      ? `<span class="spinner-status">${t("fieldPhase.opponentSpinning")}</span>`
+      : `<button id="spin-direction" class="primary spinner-btn">${t("fieldPhase.spinDirection")}</button>`;
   } else if (phase === "SpinningDirection") {
-    dirAction = `<span class="spinner-status">Spinning…</span>`;
+    dirAction = `<span class="spinner-status">${t("fieldPhase.spinning")}</span>`;
   }
   const dirSpinner = showDirSpinner
     ? renderSpinner({
@@ -56,7 +57,7 @@ export function renderFieldPhase(props: FieldPhaseProps): string {
         segments: dirSegments,
         result: direction,
         spinning: dirSpinning,
-        title: "Direction (A–O)",
+        title: t("fieldPhase.directionTitle"),
         actionHtml: dirAction,
       })
     : "";
@@ -69,10 +70,10 @@ export function renderFieldPhase(props: FieldPhaseProps): string {
   let depthAction = "";
   if (phase === "AwaitingDepthSpin") {
     depthAction = humanIsDefense
-      ? `<span class="spinner-status">Opponent spinning…</span>`
-      : `<button id="spin-depth" class="primary spinner-btn">🎯 Spin</button>`;
+      ? `<span class="spinner-status">${t("fieldPhase.opponentSpinning")}</span>`
+      : `<button id="spin-depth" class="primary spinner-btn">${t("fieldPhase.spinDepth")}</button>`;
   } else if (phase === "SpinningDepth") {
-    depthAction = `<span class="spinner-status">Spinning…</span>`;
+    depthAction = `<span class="spinner-status">${t("fieldPhase.spinning")}</span>`;
   }
   const depthSpinner = showDepthSpinner
     ? renderSpinner({
@@ -80,7 +81,7 @@ export function renderFieldPhase(props: FieldPhaseProps): string {
         segments: depthSegments,
         result: depth != null ? String(depth) : undefined,
         spinning: depthSpinning,
-        title: "Depth (1–12)",
+        title: t("fieldPhase.depthTitle"),
         actionHtml: depthAction,
       })
     : "";
@@ -89,27 +90,34 @@ export function renderFieldPhase(props: FieldPhaseProps): string {
   if (phase === "Placing") {
     controls = humanIsDefense
       ? `
-        <p>Click a fielder (F1–F7), then click a grid cell to move them. Pitcher (P) is auto-placed.</p>
-        <button id="confirm-fielders" class="primary">Confirm placement</button>
-        <button id="reset-fielders">Reset</button>
+        <p>${t("fieldPhase.placingHuman")}</p>
+        <button id="confirm-fielders" class="primary">${t("fieldPhase.confirmFielders")}</button>
+        <button id="reset-fielders">${t("fieldPhase.resetFielders")}</button>
       `
-      : `<p>Computer is placing fielders…</p>`;
+      : `<p>${t("fieldPhase.placingComputer")}</p>`;
   } else if (phase === "Resolved") {
-    controls = `<button id="continue-after-hit" class="primary">Continue</button>`;
+    controls = `<button id="continue-after-hit" class="primary">${t("fieldPhase.continue")}</button>`;
   }
+
+  const headerText = t("fieldPhase.ballInPlay", {
+    name: `<strong>${batter.name}</strong>`,
+    hand: batter.handedness[0] ?? "",
+    strength: t(`strength.${batter.strength}`),
+    card: t(`cards.batter.${batterCard}`),
+  });
 
   return `
     <section class="field-phase">
       <header class="atbat-header">
-        <div>Ball in play! <strong>${batter.name}</strong> (${batter.handedness[0]}HB, ${batter.strength}) — ${batterCard}</div>
+        <div>${headerText}</div>
       </header>
       <div class="field-layout">
         <div class="field-diamond-area">
           ${grid}
         </div>
         <div class="spinners-area">
-          ${dirSpinner || `<div class="spinner-placeholder">Direction<br/>(A–O)</div>`}
-          ${depthSpinner || `<div class="spinner-placeholder">Depth<br/>(1–12)</div>`}
+          ${dirSpinner || `<div class="spinner-placeholder">${t("fieldPhase.directionPlaceholder")}</div>`}
+          ${depthSpinner || `<div class="spinner-placeholder">${t("fieldPhase.depthPlaceholder")}</div>`}
         </div>
       </div>
       <div class="outcome-row">

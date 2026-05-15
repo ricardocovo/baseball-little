@@ -1,22 +1,24 @@
 import type { TeamSide } from "../../domain/players.ts";
+import { t } from "../../i18n/i18n.ts";
 
 export function renderCoinFlip(result?: TeamSide, humanSide?: TeamSide): string {
   if (!result) {
     return `
       <section class="coinflip">
-        <h2>Coin flip</h2>
+        <h2>${t("coinFlip.title")}</h2>
         <div class="coin spinning"></div>
-        <p>Determining who bats first…</p>
+        <p>${t("coinFlip.determining")}</p>
       </section>
     `;
   }
-  const youOrThem = humanSide === result ? "You bat first." : "Computer bats first.";
+  const youOrThem = humanSide === result ? t("coinFlip.youBatFirst") : t("coinFlip.computerBatsFirst");
+  const sideLabel = result === "Home" ? t("coinFlip.home") : t("coinFlip.away");
   return `
     <section class="coinflip">
-      <h2>Coin flip</h2>
+      <h2>${t("coinFlip.title")}</h2>
       <div class="coin done"></div>
-      <p><strong>${result}</strong> won the toss. ${youOrThem}</p>
-      <button id="play-ball" class="primary">Play ball ⚾</button>
+      <p>${t("coinFlip.wonToss", { side: `<strong>${sideLabel}</strong>`, who: youOrThem })}</p>
+      <button id="play-ball" class="primary">${t("coinFlip.playBall")}</button>
     </section>
   `;
 }

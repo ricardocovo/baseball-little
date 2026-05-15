@@ -25,6 +25,8 @@ import { playHitSound, playStrikeOutSound, playHomeRunSound } from "../sounds/so
 import { renderScoreboard } from "./components/Scoreboard.ts";
 import { describeEvent, renderEventLog } from "./components/EventLog.ts";
 import { renderBattingOrder } from "./components/BattingOrder.ts";
+import { bindLanguageSwitcher, renderLanguageSwitcher } from "./components/LanguageSwitcher.ts";
+import { initI18n, onLocaleChange } from "../i18n/i18n.ts";
 
 type AppPhase =
   | { kind: "Setup"; values: SetupValues }
@@ -70,6 +72,8 @@ export class App {
 
   constructor(root: HTMLElement) {
     this.root = root;
+    initI18n();
+    onLocaleChange(() => this.render());
     this.render();
   }
 
@@ -95,7 +99,8 @@ export class App {
         break;
       }
     }
-    this.root.innerHTML = html;
+    this.root.innerHTML = `<header class="app-header">${renderLanguageSwitcher()}</header>${html}`;
+    bindLanguageSwitcher(this.root);
     this.bindEvents();
   }
 

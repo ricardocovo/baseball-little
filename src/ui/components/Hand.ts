@@ -1,6 +1,7 @@
 import type { BatterCard, PitcherCard } from "../../domain/cards.ts";
-import { BATTER_CARD_LABELS, PITCHER_CARD_LABELS, BATTER_CARD_IMAGES, PITCHER_CARD_IMAGES } from "../../domain/cards.ts";
+import { BATTER_CARD_IMAGES, PITCHER_CARD_IMAGES } from "../../domain/cards.ts";
 import { getCardImageSrc } from "../assets/cardImages.ts";
+import { t } from "../../i18n/i18n.ts";
 
 export function renderBatterHand(
   hand: readonly BatterCard[],
@@ -9,7 +10,7 @@ export function renderBatterHand(
   return renderHand(
     hand,
     selected,
-    (c) => BATTER_CARD_LABELS[c],
+    (c) => t(`cards.batter.${c}` as const),
     (c) => BATTER_CARD_IMAGES[c],
     "batter",
   );
@@ -22,7 +23,7 @@ export function renderPitcherHand(
   return renderHand(
     hand,
     selected,
-    (c) => PITCHER_CARD_LABELS[c],
+    (c) => t(`cards.pitcher.${c}` as const),
     (c) => PITCHER_CARD_IMAGES[c],
     "pitcher",
   );

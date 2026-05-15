@@ -774,3 +774,10 @@ input, select {
 .game-over .winner { font-size: 2rem; color: var(--gold); margin: 1rem 0; }
 .game-over .final-score { font-size: 1.25rem; color: var(--fg); }
 .game-over .reason { color: var(--fg-dim); font-style: italic; }
+
+/* ---- Language switcher ---- */
+app-header, .app-header { display: flex; justify-content: flex-end; padding: 6px 12px; }
+.language-switcher { display: inline-flex; gap: 0; border: 1px solid #555; border-radius: 6px; overflow: hidden; }
+.language-switcher .lang-btn { background: #222; color: #ddd; border: none; padding: 4px 10px; cursor: pointer; font-size: 12px; font-weight: 700; }
+.language-switcher .lang-btn + .lang-btn { border-left: 1px solid #555; }
+.language-switcher .lang-btn.active { background: #cc2233; color: #fff; }

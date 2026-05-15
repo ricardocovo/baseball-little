@@ -1,63 +1,102 @@
 import type { GameEvent } from "../../engine/events.ts";
-import { BATTER_CARD_LABELS, PITCHER_CARD_LABELS } from "../../domain/cards.ts";
+import { t, plural } from "../../i18n/i18n.ts";
 
 export function describeEvent(e: GameEvent): string {
   switch (e.type) {
     case "GameStarted":
-      return `Game started — ${e.firstAtBat} bats first.`;
+      return t("eventLog.gameStarted", { side: t(`sides.${e.firstAtBat}`) });
     case "AtBatStarted":
-      return `${e.batter.name} (${e.batter.handedness[0]}HB, ${e.batter.strength}) steps up.`;
+      return t("eventLog.atBatStarted", {
+        name: e.batter.name,
+        hand: e.batter.handedness[0] ?? "",
+        strength: t(`strength.${e.batter.strength}`),
+      });
     case "PitchResolved":
-      return `Pitch: ${PITCHER_CARD_LABELS[e.pitcherCard]} vs ${BATTER_CARD_LABELS[e.batterCard]}.`;
+      return t("eventLog.pitchResolved", {
+        pitcher: t(`cards.pitcher.${e.pitcherCard}`),
+        batter: t(`cards.batter.${e.batterCard}`),
+      });
     case "StrikeOut":
-      return `STRIKE OUT — ${e.batter.name}.`;
+      return t("eventLog.strikeOut", { name: e.batter.name });
     case "WalkIssued":
-      return `WALK — ${e.batter.name} takes first.`;
+      return t("eventLog.walkIssued", { name: e.batter.name });
     case "NoPlay":
-      return `No play (${e.reason}).`;
+      return t("eventLog.noPlay", { reason: e.reason });
     case "BallInPlay":
-      return `Ball in play! ${e.batter.name} swings…`;
+      return t("eventLog.ballInPlay", { name: e.batter.name });
     case "HitDirection":
-      return `Direction: column ${e.col}.`;
+      return t("eventLog.hitDirection", { col: e.col });
     case "HitDepth":
-      return `Depth: row ${e.row}.`;
+      return t("eventLog.hitDepth", { row: e.row });
     case "HitClassified":
       switch (e.classification.kind) {
-        case "Out": return `Caught — out at ${e.classification.by.col}${e.classification.by.row}.`;
-        case "Single": return `SINGLE.`;
-        case "Double": return `DOUBLE.`;
-        case "Triple": return `TRIPLE.`;
-        case "HomeRun": return e.classification.insideThePark ? `HOME RUN (inside the park)!` : `HOME RUN!`;
-        case "Error": return `ERROR on the field.`;
+        case "Out":
+          return t("eventLog.caughtAt", {
+            col: e.classification.by.col,
+            row: e.classification.by.row,
+          });
+        case "Single": return t("eventLog.single");
+        case "Double": return t("eventLog.double");
+        case "Triple": return t("eventLog.triple");
+        case "HomeRun":
+          return e.classification.insideThePark
+            ? t("eventLog.homeRunInsidePark")
+            : t("eventLog.homeRun");
+        case "Error": return t("eventLog.error");
       }
       return "";
-    case "RunsScored":
-      return `Run${e.runs > 1 ? "s" : ""} scored: ${e.scorers.map((s) => s.name).join(", ")}.`;
+    case "RunsScored": {
+      const names = e.scorers.map((s) => s.name).join(", ");
+      return plural(e.runs, "eventLog.runScored", "eventLog.runsScored", { names });
+    }
     case "OutsRecorded":
-      return `Out recorded${e.reason ? ` (${e.reason})` : ""}.`;
+      return e.reason
+        ? t("eventLog.outRecordedReason", { reason: e.reason })
+        : t("eventLog.outRecorded");
     case "RunnerOut":
-      return `Runner out: ${e.runner.name} from ${e.from}.`;
+      return t("eventLog.runnerOut", { name: e.runner.name, from: t(`bases.${e.from}`) });
     case "BatterAdvances":
-      return `${e.batter.name} → ${e.to}.`;
+      return t("eventLog.batterAdvances", { name: e.batter.name, to: t(`bases.${e.to}`) });
     case "RunnerAdvances":
-      return `${e.runner.name}: ${e.from} → ${e.to}.`;
+      return t("eventLog.runnerAdvances", {
+        name: e.runner.name,
+        from: t(`bases.${e.from}`),
+        to: t(`bases.${e.to}`),
+      });
     case "ErrorOnField":
-      return `Error at ${e.landing.col}${e.landing.row}.`;
+      return t("eventLog.errorOnField", { col: e.landing.col, row: e.landing.row });
     case "HalfInningEnded":
-      return `End of ${e.half} ${e.inning}: ${e.runsThisHalf} run${e.runsThisHalf === 1 ? "" : "s"}.`;
+      return t("eventLog.halfInningEnded", {
+        half: t(`halves.${e.half}`),
+        inning: e.inning,
+        runs: e.runsThisHalf,
+        label: e.runsThisHalf === 1 ? t("eventLog.runsLabelOne") : t("eventLog.runsLabelOther"),
+      });
     case "HandExhausted":
-      return `${e.side} ran out of ${e.role} cards.`;
+      return t("eventLog.handExhausted", {
+        side: t(`sides.${e.side}`),
+        role: t(`cardPhase.role.${e.role}`),
+      });
     case "HandsReplenished":
-      return `Hands replenished for ${e.half} ${e.inning}.`;
+      return t("eventLog.handsReplenished", {
+        half: t(`halves.${e.half}`),
+        inning: e.inning,
+      });
     case "GameOver":
-      return `GAME OVER — ${e.winner === "Tie" ? "tie" : `${e.winner} wins`} ${e.finalScore.away}–${e.finalScore.home}.`;
+      return e.winner === "Tie"
+        ? t("eventLog.gameOverTie", { away: e.finalScore.away, home: e.finalScore.home })
+        : t("eventLog.gameOverWin", {
+            winner: t(`sides.${e.winner}`),
+            away: e.finalScore.away,
+            home: e.finalScore.home,
+          });
   }
 }
 
 export function renderEventLog(events: readonly GameEvent[], maxItems = 60): string {
   const last = events.slice(-maxItems).reverse();
   const items = last.map((e) => `<li class="evt evt-${e.type}">${escapeHtml(describeEvent(e))}</li>`).join("");
-  return `<div class="event-log"><h3>Play-by-play</h3><ul>${items}</ul></div>`;
+  return `<div class="event-log"><h3>${t("eventLog.title")}</h3><ul>${items}</ul></div>`;
 }
 
 function escapeHtml(s: string): string {

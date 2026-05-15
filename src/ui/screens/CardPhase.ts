@@ -1,13 +1,9 @@
 import type { GameSnapshot } from "../../engine/GameState.ts";
 import type { BatterCard, PitcherCard } from "../../domain/cards.ts";
-import {
-  BATTER_CARD_LABELS,
-  PITCHER_CARD_LABELS,
-  BATTER_CARD_IMAGES,
-  PITCHER_CARD_IMAGES,
-} from "../../domain/cards.ts";
+import { BATTER_CARD_IMAGES, PITCHER_CARD_IMAGES } from "../../domain/cards.ts";
 import { getCardImageSrc } from "../assets/cardImages.ts";
 import { renderBatterHand, renderPitcherHand, cardBack } from "../components/Hand.ts";
+import { t } from "../../i18n/i18n.ts";
 
 export type CardPhaseProps = {
   snap: GameSnapshot;
@@ -32,12 +28,15 @@ export function renderCardPhase(props: CardPhaseProps): string {
   const offenseTeam = offenseSide === "Home" ? snap.teams.home : snap.teams.away;
   const batter = offenseTeam.lineup[snap.battingIndex[offenseSide === "Home" ? "home" : "away"]];
 
-  const myCardSide = humanRole === "batter" ? "Batter" : "Pitcher";
-  const aiCardSide = humanRole === "batter" ? "Pitcher" : "Batter";
+  const myCardSide = t(`cardPhase.sideLabel.${humanRole}`);
+  const aiRole: "batter" | "pitcher" = humanRole === "batter" ? "pitcher" : "batter";
+  const aiCardSide = t(`cardPhase.sideLabel.${aiRole}`);
 
   const reveal = (sel: string | undefined, kind: "batter" | "pitcher", label: string) => {
     if (!sel) return cardBack(kind);
-    const text = kind === "batter" ? BATTER_CARD_LABELS[sel as BatterCard] : PITCHER_CARD_LABELS[sel as PitcherCard];
+    const text = kind === "batter"
+      ? t(`cards.batter.${sel as BatterCard}`)
+      : t(`cards.pitcher.${sel as PitcherCard}`);
     const imgFile = kind === "batter" ? BATTER_CARD_IMAGES[sel as BatterCard] : PITCHER_CARD_IMAGES[sel as PitcherCard];
     const imgSrc = getCardImageSrc(imgFile);
     return `<div class="card ${kind} revealed" aria-label="${label}: ${text}"><img class="card-img" src="${imgSrc}" alt="${text}" /></div>`;
@@ -50,25 +49,29 @@ export function renderCardPhase(props: CardPhaseProps): string {
   const humanKind: "batter" | "pitcher" = humanRole;
 
   const continueBtn = revealed
-    ? `<button id="continue" class="primary">Continue</button>`
+    ? `<button id="continue" class="primary">${t("cardPhase.continue")}</button>`
     : ``;
+
+  const batterName = batter?.name ?? "";
+  const batterHand = batter ? (batter.handedness[0] ?? "") : "";
+  const batterStrength = batter ? t(`strength.${batter.strength}`) : "";
 
   return `
     <section class="card-phase">
       <header class="atbat-header">
-        <div>At bat: <strong>${batter?.name}</strong> (${batter?.handedness[0]}HB, ${batter?.strength})</div>
-        <div>You are the <strong>${humanRole}</strong>.</div>
+        <div>${t("cardPhase.atBat", { name: `<strong>${batterName}</strong>`, hand: batterHand, strength: batterStrength })}</div>
+        <div>${t("cardPhase.youAreThe", { role: `<strong>${t(`cardPhase.role.${humanRole}`)}</strong>` })}</div>
       </header>
 
       <div class="matchup">
         <div class="me">
-          <div class="label">You (${myCardSide})</div>
-          ${showHumanReveal ? reveal(humanSelection, humanKind, myCardSide) : `<div class="prompt">Pick a card</div>`}
+          <div class="label">${t("cardPhase.you", { side: myCardSide })}</div>
+          ${showHumanReveal ? reveal(humanSelection, humanKind, myCardSide) : `<div class="prompt">${t("cardPhase.pickCard")}</div>`}
         </div>
-        <div class="vs">vs</div>
+        <div class="vs">${t("cardPhase.vs")}</div>
         <div class="opponent">
-          <div class="label">Computer (${aiCardSide})</div>
-          ${showAiReveal ? reveal(aiSelection, aiKind, aiCardSide) : (aiThinking ? `<div class="thinking">Thinking…</div>` : cardBack(aiKind))}
+          <div class="label">${t("cardPhase.computer", { side: aiCardSide })}</div>
+          ${showAiReveal ? reveal(aiSelection, aiKind, aiCardSide) : (aiThinking ? `<div class="thinking">${t("cardPhase.thinking")}</div>` : cardBack(aiKind))}
         </div>
       </div>
 
@@ -91,5 +94,5 @@ export function renderCardHand(props: CardPhaseProps): string {
     ? renderBatterHand(humanHand as BatterCard[], humanSelection as BatterCard | undefined)
     : renderPitcherHand(humanHand as PitcherCard[], humanSelection as PitcherCard | undefined);
 
-  return `<div class="your-hand"><h3>Your hand (${humanRole})</h3>${humanHandHtml}</div>`;
+  return `<div class="your-hand"><h3>${t("cardPhase.yourHand", { role: t(`cardPhase.role.${humanRole}`) })}</h3>${humanHandHtml}</div>`;
 }
