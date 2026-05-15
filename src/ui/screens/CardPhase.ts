@@ -61,14 +61,14 @@ export function renderCardPhase(props: CardPhaseProps): string {
       </header>
 
       <div class="matchup">
-        <div class="opponent">
-          <div class="label">Computer (${aiCardSide})</div>
-          ${showAiReveal ? reveal(aiSelection, aiKind, aiCardSide) : (aiThinking ? `<div class="thinking">Thinking…</div>` : cardBack(aiKind))}
-        </div>
-        <div class="vs">vs</div>
         <div class="me">
           <div class="label">You (${myCardSide})</div>
           ${showHumanReveal ? reveal(humanSelection, humanKind, myCardSide) : `<div class="prompt">Pick a card</div>`}
+        </div>
+        <div class="vs">vs</div>
+        <div class="opponent">
+          <div class="label">Computer (${aiCardSide})</div>
+          ${showAiReveal ? reveal(aiSelection, aiKind, aiCardSide) : (aiThinking ? `<div class="thinking">Thinking…</div>` : cardBack(aiKind))}
         </div>
       </div>
 
