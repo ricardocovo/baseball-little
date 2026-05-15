@@ -22,10 +22,7 @@ import { renderCardPhase, renderCardHand } from "./screens/CardPhase.ts";
 import { renderFieldPhase } from "./screens/FieldPhase.ts";
 import { renderGameOver } from "./screens/GameOver.ts";
 import { playHitSound, playStrikeOutSound, playHomeRunSound } from "../sounds/sounds.ts";
-import {
-  renderGameHeader,
-  renderScoreboard,
-} from "./components/Scoreboard.ts";
+import { renderScoreboard } from "./components/Scoreboard.ts";
 import { describeEvent, renderEventLog } from "./components/EventLog.ts";
 import { renderBattingOrder } from "./components/BattingOrder.ts";
 
@@ -94,7 +91,7 @@ export class App {
         break;
       case "GameOver": {
         const goSnap = this.game.snapshot();
-        html = `<div class="game-frame"><div class="game-main">${renderGameHeader(goSnap)}<div class="game-content"><div class="content-main"><div class="scoreboard-panel">${renderScoreboard(goSnap)}</div>${renderGameOver(goSnap)}</div></div></div><aside class="content-sidebar">${renderBattingOrder(goSnap)}${renderEventLog(this.events)}</aside></div>`;
+        html = `<div class="game-frame"><div class="game-main"><div class="game-content"><div class="content-main"><div class="scoreboard-panel">${renderScoreboard(goSnap)}</div>${renderGameOver(goSnap)}</div></div></div><aside class="content-sidebar">${renderBattingOrder(goSnap)}${renderEventLog(this.events)}</aside></div>`;
         break;
       }
     }
@@ -131,13 +128,11 @@ export class App {
       main = renderGameOver(snap);
     }
 
-    const top = renderGameHeader(snap);
     const sb = `<div class="scoreboard-panel">${renderScoreboard(snap)}</div>`;
 
     return `
       <div class="game-frame">
         <div class="game-main">
-          ${top}
           <div class="game-content">
             <div class="content-main">
               ${sb}

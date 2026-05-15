@@ -17,52 +17,7 @@ function ordinal(n: number): string {
   }
 }
 
-/* ─── Header: teams, score, inning, outs, bases ─── */
-
-export function renderGameHeader(snap: GameSnapshot): string {
-  const arrow = snap.half === "Top" ? "▲" : "▼";
-  const inningOrd = ordinal(snap.inning);
-
-  const occ = (b: { id?: string } | null | undefined) => (b ? "occupied" : "");
-
-  const diamond = `
-    <div class="diamond-mini" aria-label="bases">
-      <div class="mini-base second ${occ(snap.bases.second)}"></div>
-      <div class="mini-base third ${occ(snap.bases.third)}"></div>
-      <div class="mini-base first ${occ(snap.bases.first)}"></div>
-    </div>`;
-
-  const outs = `
-    <div class="header-outs" aria-label="outs">
-      <span class="out-dot ${snap.outs >= 1 ? "on" : ""}"></span>
-      <span class="out-dot ${snap.outs >= 2 ? "on" : ""}"></span>
-    </div>`;
-
-  return `
-    <header class="game-header">
-      <div class="header-team away-side">
-        <span class="team-badge">⚾</span>
-        <span class="team-name">${escapeHtml(snap.teams.away.name)}</span>
-      </div>
-
-      <span class="header-score">${snap.score.away}</span>
-
-      <div class="header-status">
-        <div class="inning-text">${arrow} ${inningOrd}, ${snap.outs} out${snap.outs !== 1 ? "s" : ""}</div>
-        ${diamond}
-        ${outs}
-      </div>
-
-      <span class="header-score">${snap.score.home}</span>
-
-      <div class="header-team home-side">
-        <span class="team-name">${escapeHtml(snap.teams.home.name)}</span>
-        <span class="team-badge">⚾</span>
-      </div>
-    </header>`;
-}
-
-/* ─── Scoreboard table ─── */
+/* ─── Scoreboard row: line score + inning/outs/bases status ─── */
 
 export function renderScoreboard(snap: GameSnapshot): string {
   const cur = snap.inning - 1;
@@ -84,14 +39,35 @@ export function renderScoreboard(snap: GameSnapshot): string {
     return `<th class="${active ? "current" : ""}">${i + 1}</th>`;
   }).join("");
 
+  const arrow = snap.half === "Top" ? "▲" : "▼";
+  const inningOrd = ordinal(snap.inning);
+  const occ = (b: { id?: string } | null | undefined) => (b ? "occupied" : "");
+
+  const status = `
+    <div class="header-status" aria-label="game status">
+      <div class="inning-text">${arrow} ${inningOrd.toUpperCase()}, ${snap.outs} OUT${snap.outs !== 1 ? "S" : ""}</div>
+      <div class="diamond-mini" aria-label="bases">
+        <div class="mini-base second ${occ(snap.bases.second)}"></div>
+        <div class="mini-base third ${occ(snap.bases.third)}"></div>
+        <div class="mini-base first ${occ(snap.bases.first)}"></div>
+      </div>
+      <div class="header-outs" aria-label="outs">
+        <span class="out-dot ${snap.outs >= 1 ? "on" : ""}"></span>
+        <span class="out-dot ${snap.outs >= 2 ? "on" : ""}"></span>
+      </div>
+    </div>`;
+
   return `
-    <table class="scoreboard">
-      <thead><tr><th class="team-cell"></th>${header}<th class="total">R</th></tr></thead>
-      <tbody>
-        ${lineRow(snap.teams.away.name, snap.lineScore.away, snap.score.away, "away")}
-        ${lineRow(snap.teams.home.name, snap.lineScore.home, snap.score.home, "home")}
-      </tbody>
-    </table>`;
+    <div class="scoreboard-row">
+      <table class="scoreboard">
+        <thead><tr><th class="team-cell"></th>${header}<th class="total">R</th></tr></thead>
+        <tbody>
+          ${lineRow(snap.teams.away.name, snap.lineScore.away, snap.score.away, "away")}
+          ${lineRow(snap.teams.home.name, snap.lineScore.home, snap.score.home, "home")}
+        </tbody>
+      </table>
+      ${status}
+    </div>`;
 }
 
 /* ─── Legacy helpers (kept for compatibility) ─── */

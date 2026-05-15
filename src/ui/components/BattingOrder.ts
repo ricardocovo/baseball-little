@@ -24,13 +24,13 @@ export function renderBattingOrder(snap: GameSnapshot): string {
 
   const rows = team.lineup.map((player, i) => {
     const isActive = i === activeMod && snap.status !== "GameOver";
-    const strengthLabel = player.strength[0]; // L, M, H
-    const handLabel = player.handedness[0];   // R, L
+    const strengthLabel = player.strength.toLowerCase();
+    const handLabel = player.handedness[0];
     return `
       <li class="bo-row${isActive ? " bo-row--active" : ""}">
         <span class="bo-slot">${i + 1}</span>
         <span class="bo-name">${escapeHtml(player.name)}</span>
-        <span class="bo-badge">${strengthLabel}HB</span>
+        <span class="bo-badge">${strengthLabel}</span>
         <span class="bo-badge">${handLabel}</span>
       </li>`;
   }).join("");
