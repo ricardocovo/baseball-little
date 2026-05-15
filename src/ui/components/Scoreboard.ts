@@ -17,12 +17,13 @@ function ordinal(n: number): string {
   }
 }
 
-/* ─── Scoreboard row: line score + inning/outs/bases status ─── */
+/* ─── Scoreboard row: line score + inning/outs/bases status (merged header) ─── */
 
 export function renderScoreboard(snap: GameSnapshot): string {
   const cur = snap.inning - 1;
   const isTop = snap.half === "Top";
   const gameOver = snap.status === "GameOver";
+  const fieldingSide: "away" | "home" | null = gameOver ? null : (isTop ? "home" : "away");
 
   const lineRow = (label: string, runs: number[], total: number, side: "away" | "home") => {
     const cells = Array.from({ length: snap.inningsConfigured }, (_, i) => {
@@ -31,7 +32,8 @@ export function renderScoreboard(snap: GameSnapshot): string {
         !gameOver && i === cur && ((side === "away" && isTop) || (side === "home" && !isTop));
       return `<td class="${active ? "current" : ""}">${v === undefined ? "-" : v}</td>`;
     }).join("");
-    return `<tr><td class="team-cell"><span class="sb-badge">⚾</span> ${escapeHtml(label)}</td>${cells}<td class="total">${total}</td></tr>`;
+    const badge = fieldingSide === side ? '<span class="sb-badge">⚾</span> ' : "";
+    return `<tr><td class="team-cell">${badge}${escapeHtml(label)}</td>${cells}<td class="total">${total}</td></tr>`;
   };
 
   const header = Array.from({ length: snap.inningsConfigured }, (_, i) => {

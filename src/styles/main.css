@@ -77,18 +77,20 @@ input, select {
   gap: 0;
 }
 
-/* ── Header bar ── */
-.game-header {
+/* ── Merged scoreboard/status header bar ── */
+.scoreboard-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0;
-  background: linear-gradient(180deg, #1e1e1e 0%, #161616 100%);
-  border: 1px solid var(--border);
-  border-right: none;
-  border-radius: 12px 0 0 0;
-  padding: 0.75rem 1.25rem;
+  gap: 1rem;
 }
+.scoreboard-row .scoreboard {
+  flex: 1 1 auto;
+}
+.scoreboard-row .header-status {
+  flex: 0 0 auto;
+}
+
+/* Legacy (unused) header bar styles below — retained selectors used by merged scoreboard */
 
 .header-team {
   display: flex;
@@ -184,9 +186,8 @@ input, select {
 .game-content {
   display: block;
   border: 1px solid var(--border);
-  border-top: none;
   border-right: none;
-  border-radius: 0 0 0 12px;
+  border-radius: 12px 0 0 12px;
   overflow: hidden;
   background: var(--bg);
 }

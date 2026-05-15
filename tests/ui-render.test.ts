@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { createTeam, defaultComputerLineup, defaultHumanLineup } from "../src/domain/players.ts";
 import type { GameSnapshot } from "../src/engine/GameState.ts";
 import { renderEventLog } from "../src/ui/components/EventLog.ts";
-import { renderGameHeader, renderScoreboard } from "../src/ui/components/Scoreboard.ts";
+import { renderScoreboard } from "../src/ui/components/Scoreboard.ts";
 import { renderCardHand, renderCardPhase } from "../src/ui/screens/CardPhase.ts";
 import { getCardImageSrc } from "../src/ui/assets/cardImages.ts";
 import { defaultSetupValues, readSetup, renderSetup } from "../src/ui/screens/Setup.ts";
@@ -39,11 +39,18 @@ describe("UI render helpers", () => {
   it("escapes team names and highlights the current inning in the scoreboard", () => {
     const snap = makeSnapshot();
 
-    expect(renderGameHeader(snap)).toContain("Away &amp; Co");
     const scoreboard = renderScoreboard(snap);
+    expect(scoreboard).toContain("Away &amp; Co");
     expect(scoreboard).toContain("Home &lt;Heroes&gt;");
     expect(scoreboard).toContain('<th class="current">2</th>');
     expect(scoreboard).toContain('<td class="current">-</td>');
+    expect((scoreboard.match(/⚾/g) ?? []).length).toBe(1);
+
+    const topHalfAwayRow = scoreboard.match(/<tr><td class="team-cell">([^<]|<(?!\/td>))*Away &amp; Co<\/td>/);
+    const topHalfHomeRow = scoreboard.match(/<tr><td class="team-cell">([^<]|<(?!\/td>))*Home &lt;Heroes&gt;<\/td>/);
+
+    expect(topHalfAwayRow?.[0] ?? "").not.toContain("⚾");
+    expect(topHalfHomeRow?.[0] ?? "").toContain("⚾");
   });
 
   it("escapes rendered event log text", () => {
