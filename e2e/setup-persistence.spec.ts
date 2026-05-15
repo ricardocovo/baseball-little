@@ -10,10 +10,12 @@ test.describe("Setup persistence", () => {
     await setup.selectInnings(6);
     await setup.fillHumanTeamName("Panthers");
     await setup.fillComputerTeamName("Wolves");
-    // Edit the first batter on the human lineup.
+    // Edit the first batter on the human lineup. Swap strength with a Heavy
+    // batter to preserve the required 3 Light / 3 Medium / 3 Heavy composition.
     await page.locator('input.name[data-side="human"][data-i="0"]').fill("Slugger McGee");
     await page.selectOption('select.strength[data-side="human"][data-i="0"]', "Heavy");
     await page.selectOption('select.handed[data-side="human"][data-i="0"]', "Left");
+    await page.selectOption('select.strength[data-side="human"][data-i="3"]', "Medium");
 
     await setup.startGame();
 
