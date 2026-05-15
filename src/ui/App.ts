@@ -26,6 +26,8 @@ import { renderScoreboard } from "./components/Scoreboard.ts";
 import { describeEvent, renderEventLog } from "./components/EventLog.ts";
 import { renderBattingOrder } from "./components/BattingOrder.ts";
 import { bindLanguageSwitcher, renderLanguageSwitcher } from "./components/LanguageSwitcher.ts";
+import { bindThemeSwitcher, renderThemeSwitcher } from "./components/ThemeSwitcher.ts";
+import { applyTheme, loadTheme, saveTheme, type Theme } from "./theme.ts";
 import { initI18n, onLocaleChange } from "../i18n/i18n.ts";
 
 type AppPhase =
@@ -69,9 +71,12 @@ export class App {
   private fieldUi?: FieldPhaseUiState;
   private humanSide: TeamSide = "Home";
   private ai!: Ai;
+  private theme: Theme = "light";
 
   constructor(root: HTMLElement) {
     this.root = root;
+    this.theme = loadTheme();
+    applyTheme(this.theme);
     initI18n();
     onLocaleChange(() => this.render());
     this.render();
@@ -99,7 +104,14 @@ export class App {
         break;
       }
     }
-    this.root.innerHTML = `<header class="app-header">${renderLanguageSwitcher()}</header>${html}`;
+    this.root.innerHTML = `<header class="app-header"><div class="app-switchers">${renderThemeSwitcher(this.theme)}${renderLanguageSwitcher()}</div></header>${html}`;
+    bindThemeSwitcher(this.root, (theme) => {
+      if (theme === this.theme) return;
+      this.theme = theme;
+      applyTheme(theme);
+      saveTheme(theme);
+      this.render();
+    });
     bindLanguageSwitcher(this.root);
     this.bindEvents();
   }

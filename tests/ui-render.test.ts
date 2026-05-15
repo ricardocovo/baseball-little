@@ -4,6 +4,7 @@ import { createTeam, defaultComputerLineup, defaultHumanLineup } from "../src/do
 import type { GameSnapshot } from "../src/engine/GameState.ts";
 import { renderEventLog } from "../src/ui/components/EventLog.ts";
 import { renderScoreboard } from "../src/ui/components/Scoreboard.ts";
+import { renderThemeSwitcher } from "../src/ui/components/ThemeSwitcher.ts";
 import { renderCardHand, renderCardPhase } from "../src/ui/screens/CardPhase.ts";
 import { getCardImageSrc } from "../src/ui/assets/cardImages.ts";
 import { defaultSetupValues, readSetup, renderSetup } from "../src/ui/screens/Setup.ts";
@@ -148,5 +149,14 @@ describe("UI render helpers", () => {
       revealed: true,
       aiThinking: false,
     })).toBe("");
+  });
+
+  it("renders a two-option theme switcher with active state", () => {
+    const html = renderThemeSwitcher("dark");
+    expect(html).toContain("theme-switcher");
+    expect(html).toContain('data-theme-choice="light"');
+    expect(html).toContain('data-theme-choice="dark"');
+    expect(html).toContain("aria-label=\"Theme\"");
+    expect(html).toContain('class="theme-btn active" data-theme-choice="dark"');
   });
 });

@@ -5,14 +5,61 @@
   --taupe: #555555;
   --steel: #cc0000;
   --ice: #ffffff;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
 
+:root,
+:root[data-theme="light"] {
+  --bg: #eef2f6;
+  --bg-dim: #dfe6ee;
+  --bg-elev: #ffffff;
+  --bg-elev2: #e8eef5;
+  --fg: #0f1a26;
+  --fg-dim: #3f4d5e;
+  --fg-on-accent: #ffffff;
+  --fg-on-dark: #111111;
+  --accent: #b70c2e;
+  --accent2: #065da3;
+  --accent-dark: #87071f;
+  --accent-light: #cd1840;
+  --border: #b2bfd0;
+  --border-light: #8fa1b6;
+  --grass: #2f7a4e;
+  --grass-dark: #1b4332;
+  --error: #a4001d;
+  --gold: #9a6f00;
+  --gold-dark: #775600;
+  --gold-shadow: #5a4300;
+  --field-board-bg: #bdd2eb;
+  --field-grass: #44885d;
+  --field-warning-track: #9f6b34;
+  --field-infield: #c49058;
+  --field-diamond: #4f8b65;
+  --field-lines: #f7fbff;
+  --field-grid: rgba(247, 251, 255, 0.6);
+  --field-fence-fill: rgba(247, 251, 255, 0.18);
+  --field-fence-stroke: rgba(247, 251, 255, 0.75);
+  --field-cell-hover: rgba(255, 255, 255, 0.24);
+  --field-marker-stroke: #f7fbff;
+  --field-marker-text: #f7fbff;
+  --field-axis: #f7fbff;
+  --field-axis-row: rgba(247, 251, 255, 0.82);
+  --control-hover-bg: #d7e0ea;
+  --control-hover-border: #6f8298;
+  color-scheme: light;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+:root[data-theme="dark"] {
   --bg: #111111;
   --bg-dim: #1a1a1a;
   --bg-elev: #1e1e1e;
   --bg-elev2: #2a2a2a;
   --fg: #f0f0f0;
   --fg-dim: #999999;
-  --fg-on-accent: #fff;
+  --fg-on-accent: #ffffff;
   --fg-on-dark: #111111;
   --accent: #cc0000;
   --accent2: #0077c0;
@@ -26,8 +73,22 @@
   --gold: #ffcc00;
   --gold-dark: #b8960b;
   --gold-shadow: #8a7014;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
+  --field-board-bg: #102a55;
+  --field-grass: #2f7a4e;
+  --field-warning-track: #b07a3a;
+  --field-infield: #c48a4a;
+  --field-diamond: #3f8a5b;
+  --field-lines: #ffffff;
+  --field-grid: rgba(255, 255, 255, 0.35);
+  --field-fence-fill: rgba(255, 255, 255, 0.06);
+  --field-fence-stroke: rgba(255, 255, 255, 0.55);
+  --field-cell-hover: rgba(255, 255, 255, 0.18);
+  --field-marker-stroke: #ffffff;
+  --field-marker-text: #ffffff;
+  --field-axis: #ffffff;
+  --field-axis-row: rgba(255, 255, 255, 0.7);
+  --control-hover-bg: var(--border-light);
+  --control-hover-border: var(--cream);
   color-scheme: dark;
   background: var(--bg);
   color: var(--fg);
@@ -53,7 +114,7 @@ button {
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, transform 0.05s;
 }
-button:hover { background: var(--border-light); border-color: var(--cream); }
+button:hover { background: var(--control-hover-bg); border-color: var(--control-hover-border); }
 button:active { transform: translateY(1px); }
 button.primary { background: var(--accent); color: var(--fg-on-accent); border-color: var(--accent-dark); font-weight: 600; }
 button.primary:hover { background: var(--accent-light); }
@@ -573,29 +634,29 @@ input, select {
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55),
               inset 0 0 0 3px rgba(255, 255, 255, 0.08);
-  background: #0d2a55;
+  background: var(--field-board-bg);
 }
 .field-svg { display: block; width: 100%; height: 100%; user-select: none; }
 
 /* Navy board background (the area outside the playing wedge) */
-.field-svg .board-bg { fill: #102a55; }
+.field-svg .board-bg { fill: var(--field-board-bg); }
 
 /* Outfield grass wedge */
 .field-svg .grass {
   fill: url(#__never__) #2d6a4f;
-  fill: #2f7a4e;
+  fill: var(--field-grass);
 }
-.field-svg .warning-track { fill: #b07a3a; opacity: 0.55; }
-.field-svg .infield-dirt { fill: #c48a4a; }
-.field-svg .diamond { fill: #3f8a5b; stroke: #ffffff; stroke-width: 1.5; }
+.field-svg .warning-track { fill: var(--field-warning-track); opacity: 0.55; }
+.field-svg .infield-dirt { fill: var(--field-infield); }
+.field-svg .diamond { fill: var(--field-diamond); stroke: var(--field-lines); stroke-width: 1.5; }
 .field-svg .foul-line {
-  stroke: #ffffff;
+  stroke: var(--field-lines);
   stroke-width: 2;
   stroke-linecap: round;
   opacity: 0.95;
 }
 .field-svg .home-plate {
-  fill: #ffffff;
+  fill: var(--field-lines);
   stroke: #1a1a1a;
   stroke-width: 1.5;
 }
@@ -603,17 +664,17 @@ input, select {
 /* Every cell wedge: transparent fill, thin white grid lines */
 .field-svg .cells path.cell {
   fill: rgba(255, 255, 255, 0);
-  stroke: rgba(255, 255, 255, 0.35);
+  stroke: var(--field-grid);
   stroke-width: 0.8;
   transition: fill 0.12s ease;
 }
 .field-svg .cells path.cell.fence {
-  fill: rgba(255, 255, 255, 0.06);
-  stroke: rgba(255, 255, 255, 0.55);
+  fill: var(--field-fence-fill);
+  stroke: var(--field-fence-stroke);
 }
 .field-svg .cells path.cell.error {
   fill: var(--error);
-  stroke: #ffffff;
+  stroke: var(--field-lines);
   stroke-width: 1.2;
 }
 .field-svg .cells path.cell.dir-h { fill: rgba(0, 119, 192, 0.25); }
@@ -629,12 +690,12 @@ input, select {
   stroke-width: 1.5;
 }
 .field-svg .cells path.cell.editable { cursor: pointer; }
-.field-svg .cells path.cell.editable:hover { fill: rgba(255, 255, 255, 0.18); }
+.field-svg .cells path.cell.editable:hover { fill: var(--field-cell-hover); }
 
 /* Player markers (fielders / pitcher) */
 .field-svg .marker { pointer-events: none; }
 .field-svg .marker circle {
-  stroke: #ffffff;
+  stroke: var(--field-marker-stroke);
   stroke-width: 1.4;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
 }
@@ -642,7 +703,7 @@ input, select {
   text-anchor: middle;
   font-size: 10px;
   font-weight: 700;
-  fill: #ffffff;
+  fill: var(--field-marker-text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 .field-svg .marker.fielder circle { fill: #0077c0; }
@@ -659,7 +720,7 @@ input, select {
 
 /* Axis labels (A..O outside arc, 1..12 along 1B line) */
 .field-svg .axis {
-  fill: #ffffff;
+  fill: var(--field-axis);
   font-size: 13px;
   font-weight: 700;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -668,7 +729,7 @@ input, select {
   letter-spacing: 0.5px;
   opacity: 0.85;
 }
-.field-svg .axis.row { font-size: 10px; opacity: 0.7; }
+.field-svg .axis.row { fill: var(--field-axis-row); font-size: 10px; opacity: 1; }
 
 /* ---------------- Spinners ---------------- */
 .spinners-area {
@@ -776,8 +837,45 @@ input, select {
 .game-over .reason { color: var(--fg-dim); font-style: italic; }
 
 /* ---- Language switcher ---- */
-app-header, .app-header { display: flex; justify-content: flex-end; padding: 6px 12px; }
-.language-switcher { display: inline-flex; gap: 0; border: 1px solid #555; border-radius: 6px; overflow: hidden; }
-.language-switcher .lang-btn { background: #222; color: #ddd; border: none; padding: 4px 10px; cursor: pointer; font-size: 12px; font-weight: 700; }
-.language-switcher .lang-btn + .lang-btn { border-left: 1px solid #555; }
-.language-switcher .lang-btn.active { background: #cc2233; color: #fff; }
+.app-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 6px 12px;
+}
+
+.app-switchers {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-switcher,
+.theme-switcher {
+  display: inline-flex;
+  gap: 0;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.language-switcher .lang-btn,
+.theme-switcher .theme-btn {
+  background: var(--bg-elev2);
+  color: var(--fg);
+  border: none;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.language-switcher .lang-btn + .lang-btn,
+.theme-switcher .theme-btn + .theme-btn {
+  border-left: 1px solid var(--border-light);
+}
+
+.language-switcher .lang-btn.active,
+.theme-switcher .theme-btn.active {
+  background: var(--accent);
+  color: var(--fg-on-accent);
+}

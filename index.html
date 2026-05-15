@@ -4,6 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Table Baseball-Little</title>
+    <script>
+      (function () {
+        try {
+          var key = "baseball-little:theme:v1";
+          var raw = localStorage.getItem(key);
+          var theme = raw === "dark" || raw === "light" ? raw : "light";
+          document.documentElement.setAttribute("data-theme", theme);
+          document.documentElement.style.colorScheme = theme;
+        } catch (_err) {
+          document.documentElement.setAttribute("data-theme", "light");
+          document.documentElement.style.colorScheme = "light";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

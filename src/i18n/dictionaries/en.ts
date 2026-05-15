@@ -9,6 +9,11 @@ export const en = {
   switcher: {
     label: "Language",
   },
+  theme: {
+    label: "Theme",
+    light: "Light",
+    dark: "Dark",
+  },
 
   // ── Setup screen ──
   setup: {

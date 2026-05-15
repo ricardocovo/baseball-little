@@ -8,6 +8,11 @@ export const es: Dictionary = {
   switcher: {
     label: "Idioma",
   },
+  theme: {
+    label: "Tema",
+    light: "Claro",
+    dark: "Oscuro",
+  },
 
   setup: {
     title: "Configuración del partido",
