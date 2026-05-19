@@ -571,9 +571,10 @@ input, select {
   position: relative;
   z-index: 1;
   background: rgba(0, 0, 0, 0.7);
-  color: var(--fg);
+  color: #f7fbff;
   font-size: 0.8rem;
   font-weight: 600;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
   margin-bottom: 0.4rem;
