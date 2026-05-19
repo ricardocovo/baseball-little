@@ -25,7 +25,7 @@ export type FieldPhaseProps = {
 };
 
 export function renderFieldPhase(props: FieldPhaseProps): string {
-  const { humanIsDefense, batter, batterCard, fielders, selectedFielderIndex, phase, direction, depth, landing, message } = props;
+  const { humanIsDefense, batter, batterCard: _batterCard, fielders, selectedFielderIndex, phase, direction, depth, landing, message } = props;
   const pitcher = pitcherPositionFor(batter.handedness);
 
   const grid = renderFieldGrid({
@@ -99,18 +99,8 @@ export function renderFieldPhase(props: FieldPhaseProps): string {
     controls = `<button id="continue-after-hit" class="primary">${t("fieldPhase.continue")}</button>`;
   }
 
-  const headerText = t("fieldPhase.ballInPlay", {
-    name: `<strong>${batter.name}</strong>`,
-    hand: batter.handedness[0] ?? "",
-    strength: t(`strength.${batter.strength}`),
-    card: t(`cards.batter.${batterCard}`),
-  });
-
   return `
     <section class="field-phase">
-      <header class="atbat-header">
-        <div>${headerText}</div>
-      </header>
       <div class="field-layout">
         <div class="field-diamond-area">
           ${grid}

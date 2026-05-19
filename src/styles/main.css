@@ -484,34 +484,63 @@ input, select {
 
 /* ---------------- Card phase ---------------- */
 .card-phase { padding: 1rem; }
-.atbat-header {
-  background: var(--bg-elev);
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: space-between;
-}
+/* .atbat-header removed */
 
 .matchup {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.75rem;
   margin: 1rem 0;
   background: var(--bg-elev);
   padding: 1.5rem;
   border-radius: 10px;
   border: 1px solid var(--border);
 }
-.matchup .label { color: var(--fg-dim); font-size: 0.85rem; margin-bottom: 0.5rem; text-align: center; }
-.matchup .vs { font-weight: 800; color: var(--accent); font-size: 1.5rem; text-align: center; }
-.matchup .opponent, .matchup .me { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.matchup .label { color: var(--fg-dim); font-size: 0.85rem; margin-bottom: 0.25rem; text-align: center; }
+.matchup .vs { font-weight: 800; color: var(--accent); font-size: 1.2rem; text-align: center; }
+.matchup .opponent, .matchup .me { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
 .matchup .thinking, .matchup .prompt {
   width: 140px; height: 240px; display: flex; align-items: center; justify-content: center;
   background: var(--bg-elev2); border: 1px dashed var(--border); border-radius: 8px;
   color: var(--fg-dim); font-style: italic;
+}
+.card-side-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding: 0.3rem 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  color: #f7fbff;
+  background: rgba(0, 0, 0, 0.65);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  pointer-events: none;
+}
+.card.prompt-card {
+  background: var(--bg-elev2);
+  border-style: dashed;
+  cursor: default;
+  align-items: center;
+  justify-content: center;
+}
+.card.prompt-card .prompt-text {
+  color: var(--fg-dim);
+  font-style: italic;
+  position: relative;
+  z-index: 1;
+  padding: 0 0.5rem;
+  text-align: center;
+}
+.card.back .card-back-mark {
+  position: relative;
+  z-index: 1;
+  color: transparent;
 }
 .outcome {
   background: var(--accent);
@@ -539,6 +568,13 @@ input, select {
   gap: 0.5rem;
   overflow-x: auto;
   padding-bottom: 0.5rem;
+}
+/* In the side-by-side card-phase layout the hand uses a 3-column grid (2 rows max for 5 cards) */
+.card-phase-layout .hand {
+  display: grid;
+  grid-template-columns: repeat(5, auto);
+  justify-content: start;
+  overflow-x: visible;
 }
 .card {
   width: 140px;
@@ -591,22 +627,46 @@ input, select {
 }
 .card.revealed { cursor: default; border-color: var(--accent); }
 
-/* When hand follows the grid, remove bottom rounding from game-content */
-.game-content:has(+ .your-hand) {
-  border-radius: 0;
-  border-bottom: none;
+/* Card phase side-by-side layout: hand left, matchup right */
+.card-phase-layout {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  min-height: 0;
+  padding: 1rem;
 }
 
 .your-hand {
-  margin-top: 0;
+  flex: 1 1 0;
+  min-width: 0;
   padding: 0.75rem 1rem;
   border: 1px solid var(--border);
-  border-top: none;
-  border-right: none;
-  border-radius: 0 0 0 12px;
+  border-radius: 10px;
   background: var(--bg-elev);
 }
 .your-hand h3 { color: var(--fg-dim); font-weight: 500; margin-bottom: 0.5rem; margin-top: 0; }
+
+.card-phase-layout .card-phase {
+  flex: 0 0 auto;
+  padding: 0;
+}
+.card-phase-layout .matchup { margin: 0; }
+
+/* When the hand is gone (cards revealed), keep matchup compact: cards side by side */
+.game-action .card-phase { padding: 0; }
+.game-action .matchup {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: max-content;
+  margin: 0.5rem auto;
+}
+
+/* Locked hand after both cards revealed: no hover/cursor, slightly dimmed */
+.your-hand--locked .card { cursor: default; opacity: 0.75; }
+.your-hand--locked .card:hover { border-color: var(--border); box-shadow: none; transform: none; }
+.your-hand--locked .card.selected { opacity: 1; }
 
 /* ---------------- Field grid (diamond) ---------------- */
 .field-phase { padding: 1rem; }
@@ -849,6 +909,16 @@ input, select {
   padding: 6px 12px;
 }
 
+.content-sidebar > .app-header {
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--bg-elev2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .app-switchers {
   display: inline-flex;
   align-items: center;
@@ -914,6 +984,17 @@ input, select {
   background: var(--bg-elev2);
   color: var(--fg);
   border-color: var(--border-light);
+}
+
+.nav-btn-icon-only {
+  padding: 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-btn-icon {
+  display: block;
 }
 
 /* ---------------- Modal ---------------- */

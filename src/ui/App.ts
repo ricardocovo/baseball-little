@@ -119,10 +119,18 @@ export class App {
     this.game.subscribe((e) => this.events.push(e));
   }
 
+  private renderHeader(): string {
+    return `<header class="app-header"><div class="app-switchers">${renderThemeSwitcher(this.theme)}${renderLanguageSwitcher()}</div>${this.renderNavButtons()}</header>`;
+  }
+
   private renderNavButtons(): string {
+    const instructionsLabel = escapeText(t("nav.instructions"));
+    const hittingTableLabel = escapeText(t("nav.hittingTable"));
+    const instructionsIcon = `<svg class="nav-btn-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.9.4-1.5 1-1.5 2v.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="11.5" cy="17" r="1.1" fill="currentColor"/></svg>`;
+    const hittingTableIcon = `<svg class="nav-btn-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M3 14h18M9 4v16M15 4v16" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
     return `<div class="app-nav-buttons">
-      <button type="button" class="nav-btn" data-modal-open="instructions">${escapeText(t("nav.instructions"))}</button>
-      <button type="button" class="nav-btn" data-modal-open="hitting-table">${escapeText(t("nav.hittingTable"))}</button>
+      <button type="button" class="nav-btn nav-btn-icon-only" data-modal-open="instructions" title="${instructionsLabel}" aria-label="${instructionsLabel}">${instructionsIcon}</button>
+      <button type="button" class="nav-btn nav-btn-icon-only" data-modal-open="hitting-table" title="${hittingTableLabel}" aria-label="${hittingTableLabel}">${hittingTableIcon}</button>
     </div>`;
   }
 
@@ -140,15 +148,18 @@ export class App {
         break;
       case "GameOver": {
         const goSnap = this.game.snapshot();
-        html = `<div class="game-frame"><div class="game-main"><div class="game-content"><div class="content-main"><div class="scoreboard-panel">${renderScoreboard(goSnap)}</div>${renderGameOver(goSnap)}</div></div></div><aside class="content-sidebar">${renderBattingOrder(goSnap)}${renderEventLog(this.events)}</aside></div>`;
+        html = `<div class="game-frame"><div class="game-main"><div class="game-content"><div class="content-main"><div class="scoreboard-panel">${renderScoreboard(goSnap)}</div>${renderGameOver(goSnap)}</div></div></div><aside class="content-sidebar">${this.renderHeader()}${renderBattingOrder(goSnap)}${renderEventLog(this.events)}</aside></div>`;
         break;
       }
     }
     const modals =
       renderInstructionsModal(this.openModal === "instructions") +
       renderHittingTableModal(this.openModal === "hitting-table");
-    this.root.innerHTML =
-      `<header class="app-header"><div class="app-switchers">${renderThemeSwitcher(this.theme)}${renderLanguageSwitcher()}</div>${this.renderNavButtons()}</header>${html}${modals}`;
+    const topHeader =
+      this.phase.kind === "Playing" || this.phase.kind === "GameOver"
+        ? ""
+        : this.renderHeader();
+    this.root.innerHTML = `${topHeader}${html}${modals}`;
     bindThemeSwitcher(this.root, (theme) => {
       if (theme === this.theme) return;
       this.theme = theme;
@@ -200,12 +211,13 @@ export class App {
           <div class="game-content">
             <div class="content-main">
               ${sb}
-              <div class="game-action">${main}</div>
+              ${handHtml
+                ? `<div class="card-phase-layout">${handHtml}${main}</div>`
+                : `<div class="game-action">${main}</div>`}
             </div>
           </div>
-          ${handHtml}
         </div>
-        <aside class="content-sidebar">${renderBattingOrder(snap)}${renderEventLog(this.events)}</aside>
+        <aside class="content-sidebar">${this.renderHeader()}${renderBattingOrder(snap)}${renderEventLog(this.events)}</aside>
       </div>`;
   }
 
