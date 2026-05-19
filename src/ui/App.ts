@@ -1,5 +1,6 @@
 import type { BatterCard, PitcherCard } from "../domain/cards.ts";
 import { resolveCongruence } from "../domain/congruence.ts";
+import type { ConguenceOutcome } from "../domain/congruence.ts";
 import type { Coord, Column, Row } from "../domain/field.ts";
 import { COLUMNS } from "../domain/field.ts";
 import { createTeam } from "../domain/players.ts";
@@ -22,6 +23,8 @@ import { renderCardPhase, renderCardHand } from "./screens/CardPhase.ts";
 import { renderFieldPhase } from "./screens/FieldPhase.ts";
 import { renderGameOver } from "./screens/GameOver.ts";
 import { playHitSound, playStrikeOutSound, playHomeRunSound } from "../sounds/sounds.ts";
+import { animateBallArc, playCallout, type CalloutVariant } from "./animations.ts";
+import { getCellCenter, HOME_PLATE } from "./components/FieldGrid.ts";
 import { renderScoreboard } from "./components/Scoreboard.ts";
 import { describeEvent, renderEventLog } from "./components/EventLog.ts";
 import { renderBattingOrder } from "./components/BattingOrder.ts";
@@ -46,6 +49,7 @@ type CardPhaseUiState = {
   revealed: boolean;
   aiThinking: boolean;
   outcomeMessage?: string;
+  outcome?: ConguenceOutcome;
 };
 
 type FieldPhaseUiState = {
@@ -64,6 +68,9 @@ type FieldPhaseUiState = {
 };
 
 const AI_THINK_MS = 600;
+const DEFAULT_ANIM_MS = 900;
+const HOMERUN_ANIM_MS = 1500;
+const BALL_ARC_MS = 550;
 
 function readNumericQueryParam(name: string): number | undefined {
   if (typeof window === "undefined") return undefined;
@@ -102,12 +109,15 @@ export class App {
   private theme: Theme = "light";
   private readonly aiThinkMs: number;
   private readonly spinAnimationMs: number;
+  private readonly animMs: number;
   private openModal: ModalId | null = null;
+  private lastProcessedEventCount = 0;
 
   constructor(root: HTMLElement) {
     this.root = root;
     this.aiThinkMs = readDelayQueryParam("aiMs") ?? AI_THINK_MS;
     this.spinAnimationMs = readDelayQueryParam("spinMs") ?? 2400;
+    this.animMs = readDelayQueryParam("animMs") ?? DEFAULT_ANIM_MS;
     this.theme = loadTheme();
     applyTheme(this.theme);
     initI18n();
@@ -119,10 +129,18 @@ export class App {
     this.game.subscribe((e) => this.events.push(e));
   }
 
+  private renderHeader(): string {
+    return `<header class="app-header"><div class="app-switchers">${renderThemeSwitcher(this.theme)}${renderLanguageSwitcher()}</div>${this.renderNavButtons()}</header>`;
+  }
+
   private renderNavButtons(): string {
+    const instructionsLabel = escapeText(t("nav.instructions"));
+    const hittingTableLabel = escapeText(t("nav.hittingTable"));
+    const instructionsIcon = `<svg class="nav-btn-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.9.4-1.5 1-1.5 2v.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="11.5" cy="17" r="1.1" fill="currentColor"/></svg>`;
+    const hittingTableIcon = `<svg class="nav-btn-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M3 14h18M9 4v16M15 4v16" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
     return `<div class="app-nav-buttons">
-      <button type="button" class="nav-btn" data-modal-open="instructions">${escapeText(t("nav.instructions"))}</button>
-      <button type="button" class="nav-btn" data-modal-open="hitting-table">${escapeText(t("nav.hittingTable"))}</button>
+      <button type="button" class="nav-btn nav-btn-icon-only" data-modal-open="instructions" title="${instructionsLabel}" aria-label="${instructionsLabel}">${instructionsIcon}</button>
+      <button type="button" class="nav-btn nav-btn-icon-only" data-modal-open="hitting-table" title="${hittingTableLabel}" aria-label="${hittingTableLabel}">${hittingTableIcon}</button>
     </div>`;
   }
 
@@ -140,15 +158,18 @@ export class App {
         break;
       case "GameOver": {
         const goSnap = this.game.snapshot();
-        html = `<div class="game-frame"><div class="game-main"><div class="game-content"><div class="content-main"><div class="scoreboard-panel">${renderScoreboard(goSnap)}</div>${renderGameOver(goSnap)}</div></div></div><aside class="content-sidebar">${renderBattingOrder(goSnap)}${renderEventLog(this.events)}</aside></div>`;
+        html = `<div class="game-frame"><div class="game-main"><div class="game-content"><div class="content-main"><div class="scoreboard-panel">${renderScoreboard(goSnap)}</div>${renderGameOver(goSnap)}</div></div></div><aside class="content-sidebar">${this.renderHeader()}${renderBattingOrder(goSnap)}${renderEventLog(this.events)}</aside></div>`;
         break;
       }
     }
     const modals =
       renderInstructionsModal(this.openModal === "instructions") +
       renderHittingTableModal(this.openModal === "hitting-table");
-    this.root.innerHTML =
-      `<header class="app-header"><div class="app-switchers">${renderThemeSwitcher(this.theme)}${renderLanguageSwitcher()}</div>${this.renderNavButtons()}</header>${html}${modals}`;
+    const topHeader =
+      this.phase.kind === "Playing" || this.phase.kind === "GameOver"
+        ? ""
+        : this.renderHeader();
+    this.root.innerHTML = `${topHeader}${html}${modals}`;
     bindThemeSwitcher(this.root, (theme) => {
       if (theme === this.theme) return;
       this.theme = theme;
@@ -185,7 +206,7 @@ export class App {
         landing: this.fieldUi.landing,
         message: this.fieldUi.message,
       });
-    } else if (snap.status === "AwaitingPitch" && this.cardUi) {
+    } else if (this.cardUi) {
       main = renderCardPhase({ snap, ...this.cardUi });
       handHtml = renderCardHand({ snap, ...this.cardUi });
     } else if (snap.status === "GameOver") {
@@ -200,12 +221,13 @@ export class App {
           <div class="game-content">
             <div class="content-main">
               ${sb}
-              <div class="game-action">${main}</div>
+              ${handHtml
+                ? `<div class="card-phase-layout">${handHtml}${main}</div>`
+                : `<div class="game-action">${main}</div>`}
             </div>
           </div>
-          ${handHtml}
         </div>
-        <aside class="content-sidebar">${renderBattingOrder(snap)}${renderEventLog(this.events)}</aside>
+        <aside class="content-sidebar">${this.renderHeader()}${renderBattingOrder(snap)}${renderEventLog(this.events)}</aside>
       </div>`;
   }
 
@@ -267,6 +289,7 @@ export class App {
       this.root.querySelector<HTMLButtonElement>("#new-game")?.addEventListener("click", () => {
         this.phase = { kind: "Setup", values: loadSetupValues() };
         this.events = [];
+        this.lastProcessedEventCount = 0;
         this.cardUi = undefined as CardPhaseUiState | undefined;
         this.fieldUi = undefined as FieldPhaseUiState | undefined;
         this.render();
@@ -370,6 +393,7 @@ export class App {
     const awayTeam = createTeam("a", values.computerTeamName, values.computerLineup);
     this.game = new Game();
     this.events = [];
+    this.lastProcessedEventCount = 0;
     this.subscribeToGame();
     const forcedSeed = readNumericQueryParam("seed");
     const seed = forcedSeed ?? (Math.floor(Math.random() * 0xffffffff) || 1);
@@ -447,11 +471,16 @@ export class App {
       const batterCard = (humanIsOffense ? this.cardUi.humanSelection : this.cardUi.aiSelection) as BatterCard;
       const pitcherCard = (humanIsOffense ? this.cardUi.aiSelection : this.cardUi.humanSelection) as PitcherCard;
       const outcome = resolveCongruence(batterCard, pitcherCard);
+      this.cardUi.outcome = outcome;
       if (outcome.kind === "Hit") {
         playHitSound();
       } else if (outcome.kind === "StrikeOut") {
         playStrikeOutSound();
       }
+      // Resolve the play in the engine immediately so the play-by-play
+      // sidebar updates as soon as the cards are revealed. The Continue
+      // button only drives UI transitions afterwards.
+      this.game.playCards(batterCard, pitcherCard);
       this.render();
     } else {
       this.render();
@@ -460,25 +489,22 @@ export class App {
 
   private applyCardPlay(): void {
     if (!this.cardUi || !this.cardUi.revealed) return;
-    const snap = this.game.snapshot();
-    const offSide = this.game.currentOffense();
-    const humanIsOffense = offSide === this.humanSide;
-    const batterCard = (humanIsOffense ? this.cardUi.humanSelection : this.cardUi.aiSelection) as BatterCard;
-    const pitcherCard = (humanIsOffense ? this.cardUi.aiSelection : this.cardUi.humanSelection) as PitcherCard;
-    void snap;
-    this.game.playCards(batterCard, pitcherCard);
     const after = this.game.snapshot();
     if (after.status === "GameOver") {
       this.cardUi = undefined as CardPhaseUiState | undefined;
       this.phase = { kind: "GameOver" };
       this.render();
+      this.flushNewEventCallouts();
       return;
     }
     if (after.status === "AwaitingFielding") {
       this.startFieldPhase();
+      this.flushNewEventCallouts();
       return;
     }
-    // Otherwise AwaitingPitch (next at-bat).
+    // Otherwise AwaitingPitch (next at-bat). Fire callouts (e.g. Strikeout,
+    // Walk, NoPlay) before advancing.
+    this.flushNewEventCallouts();
     this.startNextAtBat();
   }
 
@@ -555,19 +581,22 @@ export class App {
     const cls = ev.find((e) => e.type === "HitClassified");
     if (cls && cls.type === "HitClassified") {
       this.fieldUi.message = describeEvent(cls);
-    }
-    // Play home run sound if depth is 12
-    if (this.fieldUi.depth === 12) {
-      playHomeRunSound();
+      // HR sound is now driven by the real classification (the previous
+      // depth===12 check missed inside-the-park nuances and could fire on
+      // non-HR outcomes).
+      if (cls.classification.kind === "HomeRun") {
+        playHomeRunSound();
+      }
     }
     // Start spin animation
     this.fieldUi.phase = "SpinningDepth";
     this.render();
-    // After animation completes, show resolved
+    // After animation completes, show resolved.
     setTimeout(() => {
       if (!this.fieldUi) return;
       this.fieldUi.phase = "Resolved";
       this.render();
+      void this.playBallArcThenCallouts();
     }, this.spinAnimationMs);
   }
 
@@ -580,6 +609,109 @@ export class App {
       return;
     }
     this.startNextAtBat();
+  }
+
+  // ---------- animations ----------
+
+  /** Host element for full-screen callouts (the in-game frame). */
+  private calloutHost(): HTMLElement | null {
+    return (
+      this.root.querySelector<HTMLElement>(".game-frame") ?? this.root
+    );
+  }
+
+  /** Animate the ball from home plate to the landing cell, then dispatch
+   *  callouts for the just-emitted HitClassified / RunsScored / ErrorOnField
+   *  events. */
+  private async playBallArcThenCallouts(): Promise<void> {
+    const fieldUi = this.fieldUi;
+    if (!fieldUi || !fieldUi.landing) {
+      this.flushNewEventCallouts();
+      return;
+    }
+    const svg = this.root.querySelector<SVGSVGElement>("svg.field-svg");
+    if (svg) {
+      const to = getCellCenter(fieldUi.landing.col, fieldUi.landing.row);
+      await animateBallArc(svg, HOME_PLATE, to, BALL_ARC_MS);
+    }
+    this.flushNewEventCallouts();
+  }
+
+  /** Process events emitted since the last flush and fire callouts for the
+   *  notable ones. HR suppresses a concurrent RunsScored callout (the runs
+   *  count is folded into the HR badge instead). */
+  private flushNewEventCallouts(): void {
+    const fresh = this.events.slice(this.lastProcessedEventCount);
+    this.lastProcessedEventCount = this.events.length;
+    if (fresh.length === 0) return;
+
+    const host = this.calloutHost();
+    if (!host) return;
+
+    const hasHomeRun = fresh.some(
+      (e) => e.type === "HitClassified" && e.classification.kind === "HomeRun",
+    );
+
+    for (const ev of fresh) {
+      switch (ev.type) {
+        case "StrikeOut":
+          playCallout(host, {
+            text: t("eventLog.strikeOut", { name: ev.batter.name }),
+            variant: "strikeout",
+            durationMs: this.animMs,
+          });
+          break;
+        case "WalkIssued":
+          playCallout(host, {
+            text: t("eventLog.walkIssued", { name: ev.batter.name }),
+            variant: "walk",
+            durationMs: this.animMs,
+          });
+          break;
+        case "HitClassified": {
+          const variant = hitClassificationVariant(ev.classification.kind);
+          if (!variant) break;
+          const text = ev.classification.kind === "Out"
+            ? t("eventLog.caughtAt", {
+                col: ev.classification.by.col,
+                row: ev.classification.by.row,
+              })
+            : describeEvent(ev);
+          const isHr = ev.classification.kind === "HomeRun";
+          const runs = isHr
+            ? fresh
+                .filter((x) => x.type === "RunsScored")
+                .reduce((acc, x) => acc + (x.type === "RunsScored" ? x.runs : 0), 0)
+            : 0;
+          playCallout(host, {
+            text,
+            variant,
+            durationMs: isHr ? HOMERUN_ANIM_MS : this.animMs,
+            badge: runs > 1 ? `+${runs}` : undefined,
+          });
+          break;
+        }
+        case "ErrorOnField":
+          playCallout(host, {
+            text: t("eventLog.error"),
+            variant: "error",
+            durationMs: this.animMs,
+          });
+          break;
+        case "RunsScored":
+          if (hasHomeRun) break; // folded into HR badge above
+          playCallout(host, {
+            text: ev.runs === 1
+              ? t("eventLog.runScored", { names: ev.scorers.map((s) => s.name).join(", ") })
+              : t("eventLog.runsScored", { names: ev.scorers.map((s) => s.name).join(", ") }),
+            variant: "run",
+            durationMs: this.animMs,
+          });
+          break;
+        default:
+          break;
+      }
+    }
   }
 
   private handleGridClick(cell: SVGPathElement): void {
@@ -612,6 +744,20 @@ function escapeText(s: string): string {
 
 function sideKey(side: TeamSide): "home" | "away" {
   return side === "Home" ? "home" : "away";
+}
+
+function hitClassificationVariant(
+  kind: "Out" | "Single" | "Double" | "Triple" | "HomeRun" | "Error",
+): CalloutVariant | undefined {
+  switch (kind) {
+    case "Out": return "out";
+    case "Single": return "single";
+    case "Double": return "double";
+    case "Triple": return "triple";
+    case "HomeRun": return "homerun";
+    case "Error": return "error";
+    default: return undefined;
+  }
 }
 
 // Suppress unused import referenced only by types/strings:

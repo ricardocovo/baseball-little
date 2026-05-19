@@ -33,7 +33,7 @@ export function renderScoreboard(snap: GameSnapshot): string {
   const gameOver = snap.status === "GameOver";
   const fieldingSide: "away" | "home" | null = gameOver ? null : (isTop ? "home" : "away");
 
-  const lineRow = (label: string, runs: number[], total: number, side: "away" | "home") => {
+  const lineRow = (label: string, runs: number[], total: number, hits: number, side: "away" | "home") => {
     const cells = Array.from({ length: snap.inningsConfigured }, (_, i) => {
       const v = runs[i];
       const active =
@@ -41,7 +41,7 @@ export function renderScoreboard(snap: GameSnapshot): string {
       return `<td class="${active ? "current" : ""}">${v === undefined ? "-" : v}</td>`;
     }).join("");
     const badge = fieldingSide === side ? '<span class="sb-badge">⚾</span> ' : "";
-    return `<tr><td class="team-cell">${badge}${escapeHtml(label)}</td>${cells}<td class="total">${total}</td></tr>`;
+    return `<tr><td class="team-cell">${badge}${escapeHtml(label)}</td>${cells}<td class="total">${total}</td><td class="total">${hits}</td></tr>`;
   };
 
   const header = Array.from({ length: snap.inningsConfigured }, (_, i) => {
@@ -71,10 +71,10 @@ export function renderScoreboard(snap: GameSnapshot): string {
   return `
     <div class="scoreboard-row">
       <table class="scoreboard">
-        <thead><tr><th class="team-cell"></th>${header}<th class="total">${t("scoreboard.runs")}</th></tr></thead>
+        <thead><tr><th class="team-cell"></th>${header}<th class="total">${t("scoreboard.runs")}</th><th class="total">${t("scoreboard.hits")}</th></tr></thead>
         <tbody>
-          ${lineRow(snap.teams.away.name, snap.lineScore.away, snap.score.away, "away")}
-          ${lineRow(snap.teams.home.name, snap.lineScore.home, snap.score.home, "home")}
+          ${lineRow(snap.teams.away.name, snap.lineScore.away, snap.score.away, snap.hits.away, "away")}
+          ${lineRow(snap.teams.home.name, snap.lineScore.home, snap.score.home, snap.hits.home, "home")}
         </tbody>
       </table>
       ${status}

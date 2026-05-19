@@ -104,6 +104,7 @@ export const en = {
     out: "OUT",
     outs: "OUTS",
     runs: "R",
+    hits: "H",
     inningStatus: "{arrow} {ordinal}, {outs} {outsLabel}",
     ordinal: "{n}{suffix}",
   },

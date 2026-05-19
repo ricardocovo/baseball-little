@@ -60,6 +60,7 @@ export type GameSnapshot = {
   outs: number;
   bases: Bases;
   score: { home: number; away: number };
+  hits: { home: number; away: number };
   lineScore: { home: number[]; away: number[] };
   battingIndex: { home: number; away: number };
   decks: {
@@ -95,6 +96,7 @@ export class Game {
       outs: 0,
       bases: { ...EMPTY_BASES },
       score: { home: 0, away: 0 },
+      hits: { home: 0, away: 0 },
       lineScore: { home: [], away: [] },
       battingIndex: { home: 0, away: 0 },
       decks: {
@@ -347,6 +349,11 @@ export class Game {
     this.state.score[sideKey(offense)] += n;
   }
 
+  private addHit(): void {
+    const offense = this.currentOffense();
+    this.state.hits[sideKey(offense)] += 1;
+  }
+
   private applyAdvanceResult(r: ReturnType<typeof applyWalk>, events: GameEvent[]): void {
     this.state.bases = r.bases;
     for (const m of r.movements) {
@@ -474,12 +481,14 @@ export class Game {
         const batterTo = baseFromCount(baseAdvance);
         const r = advanceAllBy(this.state.bases, ph.batter, runnerAdvance, batterTo);
         this.applyAdvanceResult(r, events);
+        this.addHit();
         events.push({ type: "BatterAdvances", batter: ph.batter, to: batterTo });
         return;
       }
       case "HomeRun": {
         const r = advanceAllBy(this.state.bases, ph.batter, 4, "Home");
         this.applyAdvanceResult(r, events);
+        this.addHit();
         events.push({ type: "BatterAdvances", batter: ph.batter, to: "Home" });
         return;
       }

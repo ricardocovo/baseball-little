@@ -21,6 +21,7 @@ function makeSnapshot(): GameSnapshot {
     outs: 1,
     bases: { first: runner, second: null, third: null },
     score: { home: 2, away: 3 },
+    hits: { home: 4, away: 5 },
     lineScore: { home: [1], away: [2] },
     battingIndex: { home: 0, away: 1 },
     decks: {
@@ -116,6 +117,7 @@ describe("UI render helpers", () => {
       revealed: true,
       aiThinking: false,
       outcomeMessage: "Ball in play!",
+      outcome: { kind: "Hit" },
     });
 
     expect(html).toContain('id="continue"');
@@ -124,6 +126,10 @@ describe("UI render helpers", () => {
     expect(html).toContain("High Fastball");
     expect(html).toContain(getCardImageSrc("high-swing.png"));
     expect(html).toContain(getCardImageSrc("high-fastball.png"));
+    // Reveal animation gating: matchup is marked revealed and cards carry an
+    // outcome modifier so CSS can color the glow per result.
+    expect(html).toContain('class="matchup revealed"');
+    expect(html).toContain("outcome-hit");
   });
 
   it("groups duplicate cards in the hand and hides the hand once revealed", () => {

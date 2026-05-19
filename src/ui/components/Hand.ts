@@ -53,6 +53,6 @@ function renderHand<T extends string>(
   return `<div class="hand ${kind}-hand">${cards.join("")}</div>`;
 }
 
-export function cardBack(kind: "batter" | "pitcher"): string {
-  return `<div class="card ${kind} back">?</div>`;
+export function cardBack(kind: "batter" | "pitcher", labelHtml = ""): string {
+  return `<div class="card ${kind} back">${labelHtml}<span class="card-back-mark">?</span></div>`;
 }
