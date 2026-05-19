@@ -3,8 +3,8 @@ import type { Page } from "@playwright/test";
 export class SetupPage {
   constructor(private readonly page: Page) {}
 
-  async navigate() {
-    await this.page.goto("/");
+  async navigate(path = "/") {
+    await this.page.goto(path);
     await this.page.waitForSelector("section.setup");
   }
 

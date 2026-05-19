@@ -12,7 +12,7 @@ async function driveFullGame(
   page: import("@playwright/test").Page
 ): Promise<GameOverPage> {
   const setup = new SetupPage(page);
-  await setup.navigate();
+  await setup.navigate("/?seed=1337&coinflip=Home&aiMs=1&spinMs=1");
   const coinFlip = await setup.startGame();
   await coinFlip.proceedAfterFlip();
 

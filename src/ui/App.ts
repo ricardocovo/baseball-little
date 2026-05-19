@@ -62,6 +62,31 @@ type FieldPhaseUiState = {
 
 const AI_THINK_MS = 600;
 
+function readNumericQueryParam(name: string): number | undefined {
+  if (typeof window === "undefined") return undefined;
+  const raw = new URLSearchParams(window.location.search).get(name);
+  if (!raw) return undefined;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed)) return undefined;
+  const asInt = Math.trunc(parsed);
+  // Keep the game seed in uint32 range used by the engine RNG.
+  return asInt >= 0 && asInt <= 0xffffffff ? asInt : undefined;
+}
+
+function readDelayQueryParam(name: string): number | undefined {
+  const value = readNumericQueryParam(name);
+  if (value === undefined) return undefined;
+  // Keep delay values practical and non-negative.
+  return value >= 0 && value <= 60_000 ? value : undefined;
+}
+
+function readTeamSideQueryParam(name: string): TeamSide | undefined {
+  if (typeof window === "undefined") return undefined;
+  const raw = new URLSearchParams(window.location.search).get(name);
+  if (raw === "Home" || raw === "Away") return raw;
+  return undefined;
+}
+
 export class App {
   private root: HTMLElement;
   private phase: AppPhase = { kind: "Setup", values: loadSetupValues() };
@@ -72,9 +97,13 @@ export class App {
   private humanSide: TeamSide = "Home";
   private ai!: Ai;
   private theme: Theme = "light";
+  private readonly aiThinkMs: number;
+  private readonly spinAnimationMs: number;
 
   constructor(root: HTMLElement) {
     this.root = root;
+    this.aiThinkMs = readDelayQueryParam("aiMs") ?? AI_THINK_MS;
+    this.spinAnimationMs = readDelayQueryParam("spinMs") ?? 2400;
     this.theme = loadTheme();
     applyTheme(this.theme);
     initI18n();
@@ -307,8 +336,9 @@ export class App {
     this.render();
     // Random coin flip via a one-off RNG so the game RNG stays clean.
     const flipRng = createRng(Date.now() & 0xffffffff);
+    const forcedCoinFlip = readTeamSideQueryParam("coinflip");
     setTimeout(() => {
-      const result: TeamSide = flipRng.next() < 0.5 ? "Home" : "Away";
+      const result: TeamSide = forcedCoinFlip ?? (flipRng.next() < 0.5 ? "Home" : "Away");
       if (this.phase.kind !== "CoinFlip") return;
       this.phase.result = result;
       this.render();
@@ -323,7 +353,8 @@ export class App {
     this.game = new Game();
     this.events = [];
     this.subscribeToGame();
-    const seed = (Math.floor(Math.random() * 0xffffffff) || 1);
+    const forcedSeed = readNumericQueryParam("seed");
+    const seed = forcedSeed ?? (Math.floor(Math.random() * 0xffffffff) || 1);
     this.game.start({
       format: values.format,
       innings: values.innings,
@@ -367,7 +398,7 @@ export class App {
         }
         this.cardUi.aiThinking = false;
         this.tryRevealCards();
-      }, AI_THINK_MS);
+      }, this.aiThinkMs);
     }
   }
 
@@ -456,7 +487,7 @@ export class App {
         if (!this.fieldUi) return;
         this.fieldUi.fielders = this.ai.placeFielders(ph.batter);
         this.confirmFielders();
-      }, AI_THINK_MS);
+      }, this.aiThinkMs);
     }
   }
 
@@ -469,7 +500,7 @@ export class App {
     // If AI is offense, auto-spin.
     const humanIsOffense = this.game.currentOffense() === this.humanSide;
     if (!humanIsOffense) {
-      setTimeout(() => this.spinDirection(), AI_THINK_MS);
+      setTimeout(() => this.spinDirection(), this.aiThinkMs);
     }
   }
 
@@ -489,9 +520,9 @@ export class App {
       this.render();
       const humanIsOffense = this.game.currentOffense() === this.humanSide;
       if (!humanIsOffense) {
-        setTimeout(() => this.spinDepth(), AI_THINK_MS);
+        setTimeout(() => this.spinDepth(), this.aiThinkMs);
       }
-    }, 2400);
+    }, this.spinAnimationMs);
   }
 
   private spinDepth(): void {
@@ -519,7 +550,7 @@ export class App {
       if (!this.fieldUi) return;
       this.fieldUi.phase = "Resolved";
       this.render();
-    }, 2400);
+    }, this.spinAnimationMs);
   }
 
   private afterHitContinue(): void {
