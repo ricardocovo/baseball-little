@@ -28,7 +28,10 @@ import { renderBattingOrder } from "./components/BattingOrder.ts";
 import { bindLanguageSwitcher, renderLanguageSwitcher } from "./components/LanguageSwitcher.ts";
 import { bindThemeSwitcher, renderThemeSwitcher } from "./components/ThemeSwitcher.ts";
 import { applyTheme, loadTheme, saveTheme, type Theme } from "./theme.ts";
-import { initI18n, onLocaleChange } from "../i18n/i18n.ts";
+import { initI18n, onLocaleChange, t } from "../i18n/i18n.ts";
+import { bindModals, type ModalId } from "./components/Modal.ts";
+import { renderInstructionsModal } from "./components/InstructionsModal.ts";
+import { renderHittingTableModal } from "./components/HittingTableModal.ts";
 
 type AppPhase =
   | { kind: "Setup"; values: SetupValues }
@@ -99,6 +102,7 @@ export class App {
   private theme: Theme = "light";
   private readonly aiThinkMs: number;
   private readonly spinAnimationMs: number;
+  private openModal: ModalId | null = null;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -113,6 +117,13 @@ export class App {
 
   private subscribeToGame(): void {
     this.game.subscribe((e) => this.events.push(e));
+  }
+
+  private renderNavButtons(): string {
+    return `<div class="app-nav-buttons">
+      <button type="button" class="nav-btn" data-modal-open="instructions">${escapeText(t("nav.instructions"))}</button>
+      <button type="button" class="nav-btn" data-modal-open="hitting-table">${escapeText(t("nav.hittingTable"))}</button>
+    </div>`;
   }
 
   private render(): void {
@@ -133,7 +144,11 @@ export class App {
         break;
       }
     }
-    this.root.innerHTML = `<header class="app-header"><div class="app-switchers">${renderThemeSwitcher(this.theme)}${renderLanguageSwitcher()}</div></header>${html}`;
+    const modals =
+      renderInstructionsModal(this.openModal === "instructions") +
+      renderHittingTableModal(this.openModal === "hitting-table");
+    this.root.innerHTML =
+      `<header class="app-header"><div class="app-switchers">${renderThemeSwitcher(this.theme)}${renderLanguageSwitcher()}</div>${this.renderNavButtons()}</header>${html}${modals}`;
     bindThemeSwitcher(this.root, (theme) => {
       if (theme === this.theme) return;
       this.theme = theme;
@@ -142,6 +157,9 @@ export class App {
       this.render();
     });
     bindLanguageSwitcher(this.root);
+    bindModals(this.root, (id) => {
+      this.openModal = id;
+    });
     this.bindEvents();
   }
 
