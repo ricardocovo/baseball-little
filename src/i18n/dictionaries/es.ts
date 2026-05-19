@@ -97,6 +97,7 @@ export const es: Dictionary = {
     out: "OUT",
     outs: "OUTS",
     runs: "C",
+    hits: "H",
     inningStatus: "{arrow} {ordinal}, {outs} {outsLabel}",
     ordinal: "{n}.{suffix}",
   },

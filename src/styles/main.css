@@ -384,7 +384,7 @@ input, select {
 .scoreboard td.total, .scoreboard th.total {
   background: var(--bg-elev2);
   font-weight: 700;
-  color: #ffffff;
+  color: var(--fg);
 }
 .scoreboard .current {
   background: var(--accent);
@@ -626,6 +626,31 @@ input, select {
   color: transparent;
 }
 .card.revealed { cursor: default; border-color: var(--accent); }
+
+/* Card flip + glow play only when *both* sides reveal at once. The human's
+   card briefly appears in "revealed" markup while the AI is still thinking
+   (see CardPhase render) — gating on .matchup.revealed avoids a flip on
+   that pre-AI state and on subsequent re-renders. */
+.matchup.revealed .card.revealed {
+  animation: cardFlipIn 480ms cubic-bezier(.22, 1.2, .36, 1) both,
+             cardGlowPulse 900ms ease-out 360ms both;
+  transform-origin: center;
+  backface-visibility: hidden;
+}
+.matchup.revealed .card.revealed.outcome-hit,
+.matchup.revealed .card.revealed.outcome-baseonballs {
+  --reveal-glow: var(--grass);
+}
+.matchup.revealed .card.revealed.outcome-strikeout {
+  --reveal-glow: var(--error);
+}
+.matchup.revealed .card.revealed.outcome-special,
+.matchup.revealed .card.revealed.outcome-sacrificeattempt {
+  --reveal-glow: var(--gold);
+}
+.matchup.revealed .card.revealed.outcome-noplay {
+  --reveal-glow: var(--fg-dim);
+}
 
 /* Card phase side-by-side layout: hand left, matchup right */
 .card-phase-layout {
@@ -887,7 +912,7 @@ input, select {
 }
 
 /* ---------------- Event log ---------------- */
-.event-log { flex: 1; overflow-y: auto; padding: 0.75rem; min-height: 0; }
+.event-log { flex: 1 1 auto; overflow-y: auto; padding: 0.75rem; min-height: 0; max-height: 360px; }
 .event-log h3 { margin-top: 0; color: var(--fg-dim); font-weight: 500; }
 .event-log ul { list-style: none; padding: 0; margin: 0; }
 .event-log .evt { padding: 0.3rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
@@ -1178,3 +1203,125 @@ input, select {
   line-height: 1.6;
 }
 
+
+/* ---------------- Animations (game events) ---------------- */
+
+/* Card-phase reveal */
+@keyframes cardFlipIn {
+  0%   { transform: rotateY(-90deg) scale(0.92); opacity: 0; }
+  60%  { transform: rotateY(8deg) scale(1.02); opacity: 1; }
+  100% { transform: rotateY(0deg) scale(1); opacity: 1; }
+}
+@keyframes cardGlowPulse {
+  0%   { box-shadow: 0 0 0 0 var(--reveal-glow, var(--accent)); }
+  50%  { box-shadow: 0 0 22px 4px var(--reveal-glow, var(--accent)); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* Field-phase callouts */
+.callout {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.4rem;
+  pointer-events: none;
+  z-index: 900; /* below modal-overlay (1000) but above game content */
+  animation: calloutPop var(--callout-ms, 1000ms) cubic-bezier(.2, .9, .25, 1) both;
+}
+.callout .callout-text {
+  font-size: clamp(2.6rem, 8vw, 5.2rem);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-on-accent);
+  background: var(--accent);
+  padding: 0.4rem 1.4rem;
+  border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 0 4px rgba(255, 255, 255, 0.12);
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+}
+.callout .callout-badge {
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  font-weight: 800;
+  color: var(--fg-on-accent);
+  background: rgba(0, 0, 0, 0.55);
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  letter-spacing: 0.06em;
+}
+
+.callout-out      .callout-text { background: var(--taupe); }
+.callout-strikeout .callout-text { background: var(--error); }
+.callout-walk     .callout-text { background: var(--accent2); }
+.callout-noplay   .callout-text { background: var(--fg-dim); }
+.callout-hit      .callout-text,
+.callout-single   .callout-text { background: var(--grass); }
+.callout-double   .callout-text { background: #d97706; } /* orange */
+.callout-triple   .callout-text { background: var(--accent2); }
+.callout-error    .callout-text {
+  background: var(--error);
+  animation: calloutShake 400ms ease-in-out 80ms 2 both;
+}
+.callout-run      .callout-text { background: var(--grass-dark); }
+
+/* Home run gets extra juice */
+.callout-homerun {
+  animation: calloutPopHR var(--callout-ms, 1500ms) cubic-bezier(.2, .9, .25, 1) both;
+}
+.callout-homerun .callout-text {
+  background: var(--gold);
+  color: var(--fg-on-dark);
+  text-shadow: 0 3px 0 var(--gold-shadow);
+  box-shadow: 0 0 36px 8px rgba(255, 204, 0, 0.55),
+              0 12px 32px rgba(0, 0, 0, 0.5),
+              0 0 0 6px rgba(255, 255, 255, 0.18);
+  font-size: clamp(3rem, 10vw, 6.4rem);
+}
+
+@keyframes calloutPop {
+  0%   { transform: scale(0.55) rotate(-4deg); opacity: 0; }
+  35%  { transform: scale(1.12) rotate(2deg);  opacity: 1; }
+  55%  { transform: scale(0.98) rotate(-1deg); opacity: 1; }
+  70%  { transform: scale(1.02) rotate(0deg);  opacity: 1; }
+  85%  { transform: scale(1)    rotate(0deg);  opacity: 1; }
+  100% { transform: scale(1.04) rotate(0deg);  opacity: 0; }
+}
+@keyframes calloutPopHR {
+  0%   { transform: scale(0.4)  rotate(-6deg); opacity: 0; }
+  25%  { transform: scale(1.25) rotate(4deg);  opacity: 1; }
+  40%  { transform: scale(0.95) rotate(-2deg); opacity: 1; }
+  55%  { transform: scale(1.08) rotate(1deg);  opacity: 1; }
+  70%  { transform: scale(1.02) rotate(0deg);  opacity: 1; }
+  88%  { transform: scale(1)    rotate(0deg);  opacity: 1; }
+  100% { transform: scale(1.1)  rotate(0deg);  opacity: 0; }
+}
+@keyframes calloutShake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-10px); }
+  40%      { transform: translateX(10px); }
+  60%      { transform: translateX(-7px); }
+  80%      { transform: translateX(7px); }
+}
+
+/* The game-frame is the natural callout host for in-game phases. */
+.game-frame { position: relative; }
+
+/* Field-phase ball arc */
+.ball-arc {
+  fill: var(--gold);
+  stroke: var(--fg-on-dark);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
+  pointer-events: none;
+}
+
+/* Respect user motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+  .matchup.revealed .card.revealed { animation: none; }
+  .callout { animation: none; opacity: 0; display: none; }
+  .ball-arc { display: none; }
+}

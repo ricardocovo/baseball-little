@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test";
 export class SetupPage {
   constructor(private readonly page: Page) {}
 
-  async navigate(path = "/") {
+  async navigate(path = "/?animMs=0") {
     await this.page.goto(path);
     await this.page.waitForSelector("section.setup");
   }

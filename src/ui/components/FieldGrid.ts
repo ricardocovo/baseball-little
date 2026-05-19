@@ -64,6 +64,19 @@ function cellCenter(ci: number, r: number): [number, number] {
   return polar(rad, theta);
 }
 
+/** Center of a cell in SVG user coordinates (viewBox is 0..720). */
+export function getCellCenter(col: Column, row: Row): { x: number; y: number } {
+  const ci = COLUMNS.indexOf(col);
+  const [x, y] = cellCenter(ci, row);
+  return { x, y };
+}
+
+/** Home plate position in the same SVG user coordinates. */
+export const HOME_PLATE: { readonly x: number; readonly y: number } = {
+  x: HOME_X,
+  y: HOME_Y,
+};
+
 export function renderFieldGrid(props: FieldGridProps): string {
   // 1. Cell wedges (transparent fills; classes drive overlays/strokes).
   const cells: string[] = [];

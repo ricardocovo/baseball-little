@@ -1,6 +1,7 @@
 import type { GameSnapshot } from "../../engine/GameState.ts";
 import type { BatterCard, PitcherCard } from "../../domain/cards.ts";
 import { BATTER_CARD_IMAGES, PITCHER_CARD_IMAGES } from "../../domain/cards.ts";
+import type { ConguenceOutcome } from "../../domain/congruence.ts";
 import { getCardImageSrc } from "../assets/cardImages.ts";
 import { renderBatterHand, renderPitcherHand, cardBack } from "../components/Hand.ts";
 import { t } from "../../i18n/i18n.ts";
@@ -18,14 +19,19 @@ export type CardPhaseProps = {
   aiThinking: boolean;
   /** Outcome message to show after reveal. */
   outcomeMessage?: string;
+  /** Resolved congruence outcome (drives reveal-glow color). */
+  outcome?: ConguenceOutcome;
 };
 
 export function renderCardPhase(props: CardPhaseProps): string {
-  const { humanRole, humanSelection, aiSelection, revealed, aiThinking, outcomeMessage } = props;
+  const { humanRole, humanSelection, aiSelection, revealed, aiThinking, outcomeMessage, outcome } = props;
 
   const myCardSide = t(`cardPhase.sideLabel.${humanRole}`);
   const aiRole: "batter" | "pitcher" = humanRole === "batter" ? "pitcher" : "batter";
   const aiCardSide = t(`cardPhase.sideLabel.${aiRole}`);
+
+  // Outcome modifier class only meaningful when both cards reveal at once.
+  const outcomeClass = revealed && outcome ? ` outcome-${outcome.kind.toLowerCase()}` : "";
 
   const reveal = (sel: string | undefined, kind: "batter" | "pitcher", label: string, sideLabelHtml: string) => {
     if (!sel) return cardBack(kind, sideLabelHtml);
@@ -34,7 +40,7 @@ export function renderCardPhase(props: CardPhaseProps): string {
       : t(`cards.pitcher.${sel as PitcherCard}`);
     const imgFile = kind === "batter" ? BATTER_CARD_IMAGES[sel as BatterCard] : PITCHER_CARD_IMAGES[sel as PitcherCard];
     const imgSrc = getCardImageSrc(imgFile);
-    return `<div class="card ${kind} revealed" aria-label="${label}: ${text}">${sideLabelHtml}<img class="card-img" src="${imgSrc}" alt="${text}" /></div>`;
+    return `<div class="card ${kind} revealed${outcomeClass}" aria-label="${label}: ${text}">${sideLabelHtml}<img class="card-img" src="${imgSrc}" alt="${text}" /></div>`;
   };
 
   const showHumanReveal = revealed || humanSelection !== undefined;
@@ -50,9 +56,11 @@ export function renderCardPhase(props: CardPhaseProps): string {
   const humanLabelHtml = `<div class="card-side-label"><span class="who">${t("cardPhase.you", { side: myCardSide })}</span></div>`;
   const aiLabelHtml = `<div class="card-side-label"><span class="who">${t("cardPhase.computer", { side: aiCardSide })}</span></div>`;
 
+  const matchupClass = revealed ? "matchup revealed" : "matchup";
+
   return `
     <section class="card-phase">
-      <div class="matchup">
+      <div class="${matchupClass}">
         <div class="me">
           ${showHumanReveal ? reveal(humanSelection, humanKind, myCardSide, humanLabelHtml) : `<div class="card ${humanKind} prompt-card">${humanLabelHtml}<div class="prompt-text">${t("cardPhase.pickCard")}</div></div>`}
         </div>
