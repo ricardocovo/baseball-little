@@ -130,12 +130,17 @@ input, select {
 
 /* ---------------- Game frame layout ---------------- */
 .game-frame {
+  width: min(100%, 1400px);
   max-width: 1400px;
   margin: 0 auto;
   padding: 0.75rem;
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   gap: 0;
+}
+
+.game-main {
+  min-width: 0;
 }
 
 /* ── Merged scoreboard/status header bar ── */
