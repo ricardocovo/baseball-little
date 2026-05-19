@@ -194,6 +194,75 @@ export const en = {
     Top: "Top",
     Bottom: "Bottom",
   },
+
+  // ── Navigation ──
+  nav: {
+    instructions: "How to Play",
+    hittingTable: "Hitting Table",
+  },
+
+  // ── Modal ──
+  modal: {
+    close: "Close",
+  },
+
+  // ── Instructions modal ──
+  instructions: {
+    title: "How to Play",
+    s1Title: "Cards",
+    s1Body:
+      "Each half-inning both players draw a full hand. The batter picks from: High Swing, Low Swing, Flat Swing, Hit & Run, Walk, Stolen Base, Sacrifice, and Box. The pitcher picks from: High Fastball, Low Fastball, Inside Fastball, High Curve, Low Curve, Outside Curve, High Slider, Low Slider, Inside Slider, and No Pitch (×3).",
+    s2Title: "Card matchups — congruence",
+    s2Body:
+      "When both players reveal their card the Hitting Table decides the result: H (hit — ball goes to the field), SO (strike out), BB (walk), or — (no play, both cards are burned). Played cards are discarded; hands are only replenished at the start of the next half-inning.",
+    s3Title: "Special cards",
+    s3Walk: "Walk — the batter takes a base or strikes out; no field play.",
+    s3Sacrifice:
+      "Sacrifice — advances a runner to the next base; the batter is always out. If no runner is on base, it behaves like a swing.",
+    s3StolenBase:
+      "Stolen Base — the runner is safe only against Outside Curve, Inside Fastball, or Inside Slider; all other pitches catch the runner out.",
+    s3HitAndRun:
+      "Hit & Run — with runners on base they start moving; a hit advances them one extra base. If it strikes out (not 3rd out), the pitcher must try to throw out a runner. Breaks up the double play.",
+    s3Box:
+      "Box — if the pitcher plays No Pitch, the batter earns a walk. Against any other pitch there is no play.",
+    s3NoPitch:
+      "No Pitch — only Box beats it (walk); swings and most strategy cards burn. If batter plays Hit & Run, the lead runner is thrown out and the batter stays up.",
+    s4Title: "The field",
+    s4Body:
+      "Direction runs A (left-field line) → O (right-field line); center is H. Depth runs 1 (pitcher level) → 12 (home run over the fence). Spin the direction arrow then the depth arrow to find where the ball lands.",
+    s5Title: "Batters",
+    s5Body:
+      "Strength (Light / Medium / Heavy) affects the depth spinner probabilities — Light batters tend to hit shorter, Heavy batters farther. Handedness (Right / Left) affects the direction spinner — right-handed batters pull toward left field, left-handed toward right field.",
+    s6Title: "Fielding — making outs",
+    s6Body:
+      "Each fielder covers the 3×3 grid centred on their position (one square in every direction). The pitcher at H1 also covers H1 (one step in every direction). Any ball landing inside a fielder's zone is an out.",
+    s7Title: "Hit types",
+    s7Single: "Single — ball lands 1 diagonal step beyond any fielder.",
+    s7Double: "Double — 2 diagonal steps beyond.",
+    s7Triple: "Triple — 3 diagonal steps beyond.",
+    s7HomeRun:
+      "Home Run — ball reaches depth 12 (over the fence), or lands 4+ steps from every fielder (inside-the-park HR).",
+    s8Title: "Errors",
+    s8Body:
+      "If the ball lands on the error square (usually between B and C), the batter and all runners advance one base — it counts like a hit for Hit & Run purposes.",
+  },
+
+  // ── Hitting table modal ──
+  hittingTable: {
+    title: "Hitting Table",
+    batter: "Batter card",
+    pitcher: "Pitcher card",
+    legendTitle: "Legend",
+    legendH: "H — Hit (ball goes to the field)",
+    legendSO: "SO — Strike Out",
+    legendBB: "BB — Walk (Base on Balls)",
+    legendSAC: "SAC — Sacrifice connects (batter still out)",
+    legendNoPlay: "— — No play (both cards burned)",
+    legendStealSafe: "✓ — Stolen base: runner safe",
+    legendStealCaught: "✗ — Stolen base: runner out",
+    legendStealNoPitch: "★ — No Pitch vs Steal: lead runner thrown out, batter stays up",
+    legendHitRunNoPitch: "† — Hit & Run vs No Pitch: lead runner thrown out, batter stays up",
+  },
 } as const;
 
 type WidenStrings<T> = T extends string

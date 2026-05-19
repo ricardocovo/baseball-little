@@ -884,3 +884,215 @@ input, select {
   background: var(--accent);
   color: var(--fg-on-accent);
 }
+
+/* ---------------- App header nav buttons ---------------- */
+.app-header {
+  align-items: center;
+}
+
+.app-nav-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+}
+
+.nav-btn {
+  background: transparent;
+  color: var(--fg-dim);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.nav-btn:hover {
+  background: var(--bg-elev2);
+  color: var(--fg);
+  border-color: var(--border-light);
+}
+
+/* ---------------- Modal ---------------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-dialog {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  max-width: 860px;
+  width: 100%;
+  max-height: 88vh;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--fg-dim);
+  font-size: 1.1rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  background: var(--bg-elev2);
+  color: var(--fg);
+}
+
+.modal-body {
+  overflow-y: auto;
+  padding: 1.25rem;
+  flex: 1;
+}
+
+/* ---------------- Instructions modal content ---------------- */
+.instructions-section {
+  margin-bottom: 1.25rem;
+}
+
+.instructions-section:last-child {
+  margin-bottom: 0;
+}
+
+.instructions-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.4rem;
+}
+
+.instructions-section-body p {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  color: var(--fg);
+  line-height: 1.55;
+}
+
+.instructions-section-body ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.instructions-section-body li {
+  font-size: 0.9rem;
+  color: var(--fg);
+  line-height: 1.55;
+  margin-bottom: 0.3rem;
+}
+
+/* ---------------- Congruence / Hitting table ---------------- */
+.ct-scroll-wrapper {
+  overflow-x: auto;
+  margin-bottom: 1.25rem;
+}
+
+.congruence-table {
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.congruence-table th,
+.congruence-table td {
+  border: 1px solid var(--border);
+  padding: 0.3rem 0.5rem;
+  text-align: center;
+}
+
+.ct-corner {
+  font-size: 0.72rem;
+  color: var(--fg-dim);
+  text-align: left;
+  white-space: normal;
+  min-width: 90px;
+}
+
+.ct-batter-header {
+  text-align: left;
+  font-weight: 600;
+  color: var(--fg);
+  background: var(--bg-elev2);
+  white-space: nowrap;
+}
+
+.ct-pitcher-header {
+  font-weight: 600;
+  color: var(--fg);
+  background: var(--bg-elev2);
+  font-size: 0.72rem;
+}
+
+.ct-cell { font-weight: 700; min-width: 36px; }
+.ct-hit { color: var(--grass); }
+.ct-so { color: var(--error); }
+.ct-bb { color: var(--accent2); }
+.ct-sac { color: var(--gold); }
+.ct-np { color: var(--fg-dim); }
+.ct-steal-safe { color: var(--grass); }
+.ct-steal-caught { color: var(--error); }
+.ct-special { color: var(--gold); }
+
+.ct-legend {
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+}
+
+.ct-legend-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--fg-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.4rem;
+}
+
+.ct-legend ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.ct-legend li {
+  font-size: 0.82rem;
+  color: var(--fg-dim);
+  line-height: 1.6;
+}
+
