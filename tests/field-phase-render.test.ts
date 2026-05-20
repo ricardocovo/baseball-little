@@ -30,7 +30,7 @@ describe("FieldPhase render", () => {
     });
     expect(html).toContain('id="continue-after-hit"');
     expect(html).toContain("Continue");
-    expect(html).toContain("Test Batter");
+    expect(html).toContain("Out (Caught).");
   });
 
   it("shows the Confirm placement button when human is defense and Placing", () => {

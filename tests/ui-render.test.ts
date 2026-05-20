@@ -147,14 +147,16 @@ describe("UI render helpers", () => {
     expect(hidden).toContain("×2");
     expect(hidden).toContain(getCardImageSrc("high-swing.png"));
     expect(hidden).toContain(getCardImageSrc("box.png"));
-    expect(renderCardHand({
+    const locked = renderCardHand({
       snap,
       humanRole: "batter",
       humanSelection: "HighSwing",
       aiSelection: "FastHigh",
       revealed: true,
       aiThinking: false,
-    })).toBe("");
+    });
+    expect(locked).toContain("your-hand--locked");
+    expect(locked).toContain("Your hand (batter)");
   });
 
   it("renders a two-option theme switcher with active state", () => {
