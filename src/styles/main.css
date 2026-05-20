@@ -155,6 +155,13 @@ input, select {
 .scoreboard-row .header-status {
   flex: 0 0 auto;
 }
+.scoreboard-logo {
+  flex: 0 0 auto;
+  height: 72px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.92;
+}
 
 /* Legacy (unused) header bar styles below — retained selectors used by merged scoreboard */
 
@@ -457,6 +464,10 @@ input, select {
 
 /* ---------------- Setup screen ---------------- */
 .setup { padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+.setup-header-row { display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.25rem; }
+.setup-logo-col { flex: 0 0 auto; }
+.setup-logo { height: 130px; width: auto; object-fit: contain; }
+.setup-meta { flex: 1 1 auto; min-width: 0; }
 .setup h2 { margin-top: 0; }
 .form-row { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; }
 .form-row label { display: flex; flex-direction: column; gap: 0.25rem; }
@@ -473,13 +484,37 @@ input, select {
 .coin {
   width: 96px;
   height: 96px;
-  background: radial-gradient(circle at 30% 30%, var(--gold), var(--gold-dark));
   border-radius: 50%;
   margin: 1rem auto;
+  position: relative;
+  transform-style: preserve-3d;
+  perspective: 400px;
+}
+.coin-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  backface-visibility: hidden;
   border: 4px solid var(--gold-shadow);
   box-shadow: 0 4px 20px rgba(255, 204, 0, 0.4);
 }
-.coin.spinning { animation: flip 0.6s linear infinite; }
+.coin-front {
+  background: radial-gradient(circle at 30% 30%, var(--gold), var(--gold-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.coin-front img {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+.coin-back {
+  background: radial-gradient(circle at 70% 70%, var(--gold), var(--gold-dark));
+  transform: rotateY(180deg);
+}
+.coin.spinning { animation: flip 0.6s linear infinite; transform-style: preserve-3d; }
 @keyframes flip { from { transform: rotateY(0deg) } to { transform: rotateY(360deg) } }
 
 /* ---------------- Card phase ---------------- */
@@ -932,6 +967,10 @@ input, select {
   display: flex;
   justify-content: flex-end;
   padding: 6px 12px;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .content-sidebar > .app-header {
@@ -942,6 +981,8 @@ input, select {
   flex-shrink: 0;
   gap: 8px;
   flex-wrap: wrap;
+  max-width: none;
+  margin: 0;
 }
 
 .app-switchers {

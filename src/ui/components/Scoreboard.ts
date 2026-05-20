@@ -1,5 +1,6 @@
 import type { GameSnapshot } from "../../engine/GameState.ts";
 import { getLocale, t } from "../../i18n/i18n.ts";
+import logoUrl from "../../images/baseball-little.png";
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, (c) =>
@@ -70,6 +71,7 @@ export function renderScoreboard(snap: GameSnapshot): string {
 
   return `
     <div class="scoreboard-row">
+      <img src="${logoUrl}" alt="Baseball Little" class="scoreboard-logo" />
       <table class="scoreboard">
         <thead><tr><th class="team-cell"></th>${header}<th class="total">${t("scoreboard.runs")}</th><th class="total">${t("scoreboard.hits")}</th></tr></thead>
         <tbody>

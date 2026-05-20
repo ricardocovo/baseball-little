@@ -1,5 +1,6 @@
 import type { DeckFormat } from "../../domain/cards.ts";
 import type { Handedness, Player, Strength } from "../../domain/players.ts";
+import logoUrl from "../../images/baseball-little.png";
 import {
   defaultComputerLineup,
   defaultHumanLineup,
@@ -53,21 +54,28 @@ export function renderSetup(values: SetupValues): string {
 
   return `
     <section class="setup">
-      <h2>${t("setup.title")}</h2>
-      <div class="form-row">
-        <label>${t("setup.formatLabel")}
-          <select id="format">
-            <option value="Reduced" ${values.format === "Reduced" ? "selected" : ""}>${t("setup.formatReduced")}</option>
-            <option value="Classic" ${values.format === "Classic" ? "selected" : ""}>${t("setup.formatClassic")}</option>
-          </select>
-        </label>
-        <label>${t("setup.inningsLabel")}
-          <select id="innings">
-            <option value="3" ${values.innings === 3 ? "selected" : ""}>3</option>
-            <option value="6" ${values.innings === 6 ? "selected" : ""}>6</option>
-            <option value="9" ${values.innings === 9 ? "selected" : ""}>9</option>
-          </select>
-        </label>
+      <div class="setup-header-row">
+        <div class="setup-logo-col">
+          <img src="${logoUrl}" alt="Baseball Little" class="setup-logo" />
+        </div>
+        <div class="setup-meta">
+          <h2>${t("setup.title")}</h2>
+          <div class="form-row">
+            <label>${t("setup.formatLabel")}
+              <select id="format">
+                <option value="Reduced" ${values.format === "Reduced" ? "selected" : ""}>${t("setup.formatReduced")}</option>
+                <option value="Classic" ${values.format === "Classic" ? "selected" : ""}>${t("setup.formatClassic")}</option>
+              </select>
+            </label>
+            <label>${t("setup.inningsLabel")}
+              <select id="innings">
+                <option value="3" ${values.innings === 3 ? "selected" : ""}>3</option>
+                <option value="6" ${values.innings === 6 ? "selected" : ""}>6</option>
+                <option value="9" ${values.innings === 9 ? "selected" : ""}>9</option>
+              </select>
+            </label>
+          </div>
+        </div>
       </div>
 
       <div class="lineups">
